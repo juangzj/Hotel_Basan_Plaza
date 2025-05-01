@@ -1,0 +1,45 @@
+# Entornos virtuales
+venv/
+env/
+ENV/
+.VENV/
+
+# Archivos de entorno
+.env
+
+# Archivos de configuración de editores
+.vscode/
+.idea/
+*.code-workspace
+
+# Archivos de bases de datos
+db.sqlite3
+*.sqlite3
+
+# Archivos de migraciones
+*/migrations/
+*/migrations/*.pyc
+*/migrations/__pycache__/
+
+# Configuración de Django
+__pycache__/
+*.py[cod]
+*.log
+media/
+static/
+staticfiles/
+
+# Archivos compilados o temporales
+*.bak
+*.swp
+*.tmp
+
+# Archivos de sistema
+.DS_Store
+Thumbs.db
+
+# Archivos de pytest
+htmlcov/
+.coverage
+.tox/
+.pytest_cache/

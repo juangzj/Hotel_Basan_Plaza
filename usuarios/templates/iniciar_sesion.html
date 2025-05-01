@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block title %}Iniciar Sesión{% endblock %}
+
+{% block content %}
+<div class="container mt-5" style="max-width: 500px;">
+  <h1 class="text-center mb-4">Iniciar Sesión</h1>
+
+  <form method="POST">
+    {% csrf_token %}
+
+    <!-- Errores específicos del campo username -->
+    {% if form.username.errors %}
+    <div class="alert alert-danger" role="alert">
+      {{ form.username.errors }}
+    </div>
+    {% endif %}
+
+    <!-- Errores específicos del campo password -->
+    {% if form.password.errors %}
+    <div class="alert alert-danger" role="alert">
+      {{ form.password.errors }}
+    </div>
+    {% endif %}
+
+    {{ form.as_p }}
+
+    <div class="d-grid gap-2">
+      <button type="submit" class="btn btn-primary">Iniciar Sesión</button>
+    </div>
+  </form>
+</div>
+{% endblock %}
