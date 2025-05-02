@@ -4,6 +4,7 @@ from .forms.InicioSesionForm import InicioSesionForm
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
+from habitaciones.models import Habitacion
 
 
 # Metodo para renderizar la vista de inicio
@@ -32,15 +33,19 @@ def iniciar_sesion(request):
     return render(request, "iniciar_sesion.html", {"form": form})
 
 
-# Metodo para renderizar la vista de panel de usuario
 @login_required(login_url="iniciar_sesion")
 def panel_de_usuario(request):
     if not request.user.is_authenticated:
         messages.error(request, "Debes iniciar sesión para acceder a esta página.")
         return redirect("iniciar_sesion")
     else:
+        habitaciones = Habitacion.objects.all()
         messages.success(request, "Bienvenido al panel de usuario.")
-        return render(request, "panel_de_usuario.html")
+        return render(
+            request,
+            "panel_de_usuario.html",
+            {"habitaciones": habitaciones},
+        )
 
 
 #  Metodo para renderizar la vista de cerrar sesion

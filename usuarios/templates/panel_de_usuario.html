@@ -1,11 +1,29 @@
 {% extends 'base.html' %}
 
-{% block title %}Panel de Usuario{% endblock %}
+{% load static %} <!-- carga el tag static -->
+
+{% block title %}Habitaciones{% endblock %}
 
 {% block content %}
+<!-- Enlace al archivo CSS -->
+<link rel="stylesheet" href="{% static 'css/panel_de_usuario.css' %}">
+
+<h1>Habitaciones disponibles</h1>
 
 {% csrf_token %}
-<h1 class="text-center">Panel de Usuario</h1>
-<p class="text-center">Bienvenido al panel de usuario. Aquí puedes gestionar tu cuenta.</p>
 
+{% if habitaciones %}
+<div class="contenedor-habitaciones">
+  {% for habitacion in habitaciones %}
+  <div class="habitacion-card">
+    <h2>Habitación {{ habitacion.numero }}</h2>
+    <p><strong>Tipo:</strong> {{ habitacion.tipo }}</p>
+    <p><strong>Capacidad:</strong> {{ habitacion.capacidad }}</p>
+    <p><strong>Descripción:</strong> {{ habitacion.descrpcion }}</p>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<p>No hay habitaciones registradas.</p>
+{% endif %}
 {% endblock %}
