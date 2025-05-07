@@ -5,60 +5,208 @@
 
 {% block content %}
 
-<!-- Link al CSS de vista_clientes -->
+<!-- CSS interno -->
 <link rel="stylesheet" href="{% static 'css/vista_clientes.css' %}">
+<style>
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+  }
 
-<h1>Vista de Clientes</h1>
-<p>Bienvenido al panel de clientes.</p>
+  .btn-container,
+  .btn-filtro-container {
+    text-align: center;
+    margin-bottom: 20px;
+  }
 
-Crear un nuevo cliente: <a href="{% url 'crear_cliente' %}">Crear Cliente</a><br>
+  .btn-crear,
+  .btn-filtros {
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: white;
+    text-decoration: none;
+    border: none;
+    border-radius: 5px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
 
-<!-- Formulario de filtrado -->
-<div class="filter-form">
-  <form method="get">
-    {{ form.as_p }}
-    <button type="submit">Filtrar</button>
-  </form>
-</div>
+  .btn-crear:hover,
+  .btn-filtros:hover {
+    background-color: #0056b3;
+  }
 
-<!-- Tabla con los clientes filtrados -->
-<div class="clientes-lista">
-  {% if filter %}
-  <table class="tabla-clientes">
-    <thead>
-      <tr>
-        <th>Nombre</th>
-        <th>Apellido</th>
-        <th>Email</th>
-        <th>Celular</th>
-        <th>Número de Documento</th>
-        <th>Acciones</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for cliente in filter %}
-      <tr>
-        <td>{{ cliente.nombre }}</td>
-        <td>{{ cliente.apellido }}</td>
-        <td>{{ cliente.email }}</td>
-        <td>{{ cliente.celular }}</td>
-        <td>{{ cliente.numero_documento }}</td>
-        <td>
-          <a href="{% url 'ver_cliente' cliente.id %}" class="btn-ver">Ver</a>
-          <a href="{% url 'editar_cliente' cliente.id %}" class="btn-editar">Editar</a>
-          <a href="{% url 'eliminar_cliente' cliente.id %}" class="btn-eliminar">Eliminar</a>
-        </td>
-      </tr>
-      {% empty %}
-      <tr>
-        <td colspan="6">No se encontraron clientes.</td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-  {% else %}
-  <p>No hay clientes disponibles.</p>
-  {% endif %}
+  .filter-form {
+    display: none;
+    /* Oculto por defecto */
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: flex-start;
+    margin-bottom: 30px;
+  }
+
+  .filter-form.visible {
+    display: flex;
+  }
+
+  .filter-form .form-group {
+    display: flex;
+    flex-direction: column;
+    min-width: 220px;
+    flex: 1;
+  }
+
+  .filter-form label {
+    font-weight: bold;
+    margin-bottom: 8px;
+  }
+
+  .filter-form input[type="text"] {
+    padding: 10px;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    width: 100%;
+  }
+
+  .filter-form button[type="submit"] {
+    padding: 10px 15px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 1rem;
+    cursor: pointer;
+  }
+
+  .clientes-lista {
+    margin-top: 20px;
+  }
+
+  .tabla-clientes {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .tabla-clientes th,
+  .tabla-clientes td {
+    padding: 12px;
+    text-align: center;
+    border: 1px solid #ddd;
+  }
+
+  .tabla-clientes th {
+    background-color: #007bff;
+    color: white;
+  }
+
+  .tabla-clientes tr:nth-child(even) {
+    background-color: #f9f9f9;
+  }
+
+  .tabla-clientes td a {
+    padding: 5px 10px;
+    border-radius: 5px;
+    text-decoration: none;
+    font-size: 0.9rem;
+  }
+
+  .btn-ver {
+    background-color: #17a2b8;
+    color: white;
+  }
+
+  .btn-editar {
+    background-color: #ffc107;
+    color: black;
+  }
+
+  .btn-eliminar {
+    background-color: #dc3545;
+    color: white;
+  }
+
+  @media (max-width: 768px) {
+    .filter-form {
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .filter-form .form-group {
+      width: 100%;
+    }
+  }
+</style>
+
+<!-- Script para mostrar/ocultar filtros -->
+<script>
+  function toggleFiltros() {
+    const form = document.querySelector('.filter-form');
+    form.classList.toggle('visible');
+  }
+</script>
+
+<div class="container">
+  <h1>Vista de Clientes</h1>
+  <p>Bienvenido al panel de clientes.</p>
+
+  <div class="btn-container">
+    <a href="{% url 'crear_cliente' %}" class="btn-crear">Crear Cliente</a>
+  </div>
+
+  <div class="btn-filtro-container">
+    <button class="btn-filtros" onclick="toggleFiltros()">Filtros para cliente</button>
+  </div>
+
+  <!-- Formulario de filtros oculto hasta que se muestre -->
+  <div class="filter-form">
+    <form method="get">
+      {{ form.as_p }}
+      <button type="submit">Filtrar</button>
+    </form>
+  </div>
+
+  <!-- Tabla de clientes -->
+  <div class="clientes-lista">
+    {% if filter %}
+    <table class="tabla-clientes">
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>Apellido</th>
+          <th>Email</th>
+          <th>Celular</th>
+          <th>Número de Documento</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for cliente in filter %}
+        <tr>
+          <td>{{ cliente.nombre }}</td>
+          <td>{{ cliente.apellido }}</td>
+          <td>{{ cliente.email }}</td>
+          <td>{{ cliente.celular }}</td>
+          <td>{{ cliente.numero_documento }}</td>
+          <td>
+            <a href="{% url 'ver_cliente' cliente.id %}" class="btn-ver">Ver</a>
+            <a href="{% url 'editar_cliente' cliente.id %}" class="btn-editar">Editar</a>
+            <a href="{% url 'eliminar_cliente' cliente.id %}" class="btn-eliminar">Eliminar</a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="6">No se encontraron clientes.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p>No hay clientes disponibles.</p>
+    {% endif %}
+  </div>
 </div>
 
 {% endblock %}

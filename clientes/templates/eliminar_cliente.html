@@ -2,19 +2,32 @@
 
 {% block content %}
 
-<h1>¿Estás seguro que deseas eliminar al cliente {{ cliente.nombre }} {{ cliente.apellido }}?</h1>
+<div class="container mt-5">
+  <div class="card shadow-lg border-danger">
+    <div class="card-header bg-danger text-white">
+      <h4 class="mb-0">Eliminar Cliente</h4>
+    </div>
+    <div class="card-body">
+      <h5 class="text-danger mb-3">¿Estás seguro que deseas eliminar al cliente <strong>{{ cliente.nombre }}
+          {{cliente.apellido }}</strong>?</h5>
 
-<p><strong>Nombre:</strong> {{ cliente.nombre }}</p>
-<p><strong>Apellido:</strong> {{ cliente.apellido }}</p>
-<p><strong>Email:</strong> {{ cliente.email }}</p>
-<p><strong>Celular:</strong> {{ cliente.celular }}</p>
-<p><strong>Documento:</strong> {{ cliente.numero_documento }}</p>
+      <ul class="list-group mb-4">
+        <li class="list-group-item"><strong>Nombre:</strong> {{ cliente.nombre }}</li>
+        <li class="list-group-item"><strong>Apellido:</strong> {{ cliente.apellido }}</li>
+        <li class="list-group-item"><strong>Email:</strong> {{ cliente.email }}</li>
+        <li class="list-group-item"><strong>Celular:</strong> {{ cliente.celular }}</li>
+        <li class="list-group-item"><strong>Documento:</strong> {{ cliente.numero_documento }}</li>
+      </ul>
 
-<form method="POST">
-  {% csrf_token %}
-  <button type="submit">Eliminar Cliente</button>
-</form>
-
-<a href="{% url 'vista_clientes' %}">Volver a la lista de clientes</a>
+      <form method="POST">
+        {% csrf_token %}
+        <div class="d-flex justify-content-between">
+          <button type="submit" class="btn btn-danger">🗑️ Eliminar Cliente</button>
+          <a href="{% url 'vista_clientes' %}" class="btn btn-outline-secondary">↩ Cancelar</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
 
 {% endblock %}
