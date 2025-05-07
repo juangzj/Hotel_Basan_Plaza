@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Clientes{% endblock %}
+
+{% block content %}
+
+<!-- Link al CSS de vista_clientes -->
+<link rel="stylesheet" href="{% static 'css/vista_clientes.css' %}">
+
+<h1>Vista de Clientes</h1>
+<p>Bienvenido al panel de clientes.</p>
+
+Crear un nuevo cliente: <a href="{% url 'crear_cliente' %}">Crear Cliente</a><br>
+
+<!-- Formulario de filtrado -->
+<div class="filter-form">
+  <form method="get">
+    {{ form.as_p }}
+    <button type="submit">Filtrar</button>
+  </form>
+</div>
+
+<!-- Tabla con los clientes filtrados -->
+<div class="clientes-lista">
+  {% if filter %}
+  <table class="tabla-clientes">
+    <thead>
+      <tr>
+        <th>Nombre</th>
+        <th>Apellido</th>
+        <th>Email</th>
+        <th>Celular</th>
+        <th>Número de Documento</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for cliente in filter %}
+      <tr>
+        <td>{{ cliente.nombre }}</td>
+        <td>{{ cliente.apellido }}</td>
+        <td>{{ cliente.email }}</td>
+        <td>{{ cliente.celular }}</td>
+        <td>{{ cliente.numero_documento }}</td>
+        <td>
+          <a href="{% url 'ver_cliente' cliente.id %}" class="btn-ver">Ver</a>
+          <a href="{% url 'editar_cliente' cliente.id %}" class="btn-editar">Editar</a>
+          <a href="{% url 'eliminar_cliente' cliente.id %}" class="btn-eliminar">Eliminar</a>
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="6">No se encontraron clientes.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p>No hay clientes disponibles.</p>
+  {% endif %}
+</div>
+
+{% endblock %}

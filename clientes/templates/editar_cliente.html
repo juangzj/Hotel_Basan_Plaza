@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h1>Editar Cliente</h1>
+
+<form method="POST">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit">Guardar Cambios</button>
+</form>
+
+<a href="{% url 'vista_clientes' %}">Volver a la lista de clientes</a>
+
+{% endblock %}

@@ -1,10 +1,26 @@
-from django.shortcuts import render, redirect
-from .forms.UsuarioForm import UserForm
-from .forms.InicioSesionForm import InicioSesionForm
-from django.contrib import messages
-from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.decorators import login_required
-from habitaciones.models import Habitacion
+from django.shortcuts import (
+    render,
+    redirect,
+)  # Importar render y redirect para manejar vistas
+from .forms.UsuarioForm import UserForm  # Importar el formulario de usuario
+from .forms.InicioSesionForm import (
+    InicioSesionForm,
+)  # Importar el formulario de inicio de sesión
+from django.contrib import (
+    messages,
+)  # Importar mensajes para mostrar notificaciones al usuario
+from django.contrib.auth import (
+    authenticate,
+    login,
+    logout,
+)  # Importar funciones de autenticación
+from django.contrib.auth.decorators import (
+    login_required,
+)  # Importar decorador para requerir autenticación
+from habitaciones.models.models import Habitacion  # Importar el modelo de habitación
+from habitaciones.filters.filtrosHabitacion import (
+    HabitacionFilter,
+)  # Importar el filtro de habitaciones
 
 
 # Metodo para renderizar la vista de inicio
@@ -33,24 +49,30 @@ def iniciar_sesion(request):
     return render(request, "iniciar_sesion.html", {"form": form})
 
 
+# Metodo para renderizar la vista de panel de usuario
+# Decorador para requerir autenticación en la vista de panel de usuario
 @login_required(login_url="iniciar_sesion")
 def panel_de_usuario(request):
-    if not request.user.is_authenticated:
-        messages.error(request, "Debes iniciar sesión para acceder a esta página.")
-        return redirect("iniciar_sesion")
-    else:
-        habitaciones = Habitacion.objects.all()
-        messages.success(request, "Bienvenido al panel de usuario.")
-        return render(
-            request,
-            "panel_de_usuario.html",
-            {"habitaciones": habitaciones},
+    # Verificamos si el usuario está autenticado
+    if request.user.is_authenticated:
+        habitacion_filter = HabitacionFilter(
+            request.GET, queryset=Habitacion.objects.all()  # pylint: disable=E1101
         )
+        context = {
+            "habitacionesForm": habitacion_filter.form,  # Pasamos las habitaciones filtradas al contexto
+            "habitacion": habitacion_filter.qs,  # Pasamos el filtro al contexto
+        }
+        return render(request, "panel_de_usuario.html", context)
+    else:
+        # Si el usuario no está autenticado, redirigimos a la página de inicio de sesión
+        messages.error(request, "Debes iniciar sesión para acceder a esta página")
+        return redirect("iniciar_sesion")
 
 
 #  Metodo para renderizar la vista de cerrar sesion
 def cerrar_sesion(request):
     logout(request)  # Cerrar sesión del usuario
+    messages.success(request, "Has cerrado sesión correctamente.")
     return redirect(iniciar_sesion)
 
 

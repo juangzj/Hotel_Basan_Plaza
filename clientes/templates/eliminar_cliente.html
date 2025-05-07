@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h1>¿Estás seguro que deseas eliminar al cliente {{ cliente.nombre }} {{ cliente.apellido }}?</h1>
+
+<p><strong>Nombre:</strong> {{ cliente.nombre }}</p>
+<p><strong>Apellido:</strong> {{ cliente.apellido }}</p>
+<p><strong>Email:</strong> {{ cliente.email }}</p>
+<p><strong>Celular:</strong> {{ cliente.celular }}</p>
+<p><strong>Documento:</strong> {{ cliente.numero_documento }}</p>
+
+<form method="POST">
+  {% csrf_token %}
+  <button type="submit">Eliminar Cliente</button>
+</form>
+
+<a href="{% url 'vista_clientes' %}">Volver a la lista de clientes</a>
+
+{% endblock %}

@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h1>Detalle del Cliente</h1>
+
+<p><strong>Nombre:</strong> {{ cliente.nombre }}</p>
+<p><strong>Apellido:</strong> {{ cliente.apellido }}</p>
+<p><strong>Email:</strong> {{ cliente.email }}</p>
+<p><strong>Celular:</strong> {{ cliente.celular }}</p>
+<p><strong>Documento:</strong> {{ cliente.numero_documento }}</p>
+
+<a href="{% url 'vista_clientes' %}">Volver a la lista de clientes</a>
+
+{% endblock %}

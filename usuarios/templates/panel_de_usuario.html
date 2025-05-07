@@ -1,25 +1,32 @@
 {% extends 'base.html' %}
 
-{% load static %} <!-- carga el tag static -->
+{% load static %}
 
-{% block title %}Habitaciones{% endblock %}
+{% block title %}Panel de Usuario{% endblock %}
 
 {% block content %}
-<!-- Enlace al archivo CSS -->
+<!-- Enlace al CSS solo para esta vista -->
 <link rel="stylesheet" href="{% static 'css/panel_de_usuario.css' %}">
 
 <h1>Habitaciones disponibles</h1>
 
-{% csrf_token %}
+<!-- Formulario de filtros -->
+<form method="get">
+  {{ habitacionesForm.as_p }}
+  <button type="submit">Filtrar</button>
+</form>
 
-{% if habitaciones %}
+<hr>
+
+<!-- Mostrar habitaciones -->
+{% if habitacion %}
 <div class="contenedor-habitaciones">
-  {% for habitacion in habitaciones %}
+  {% for h in habitacion %}
   <div class="habitacion-card">
-    <h2>Habitación {{ habitacion.numero }}</h2>
-    <p><strong>Tipo:</strong> {{ habitacion.tipo }}</p>
-    <p><strong>Capacidad:</strong> {{ habitacion.capacidad }}</p>
-    <p><strong>Descripción:</strong> {{ habitacion.descrpcion }}</p>
+    <h2>Habitación {{ h.numero }}</h2>
+    <p><strong>Tipo:</strong> {{ h.tipo }}</p>
+    <p><strong>Capacidad:</strong> {{ h.capacidad }}</p>
+    <p><strong>Descripción:</strong> {{ h.descrpcion }}</p>
   </div>
   {% endfor %}
 </div>
