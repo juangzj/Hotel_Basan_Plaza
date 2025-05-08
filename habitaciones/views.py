@@ -23,6 +23,7 @@ def ver_cuenta(request, id):
     return render(request, "ver_cuenta.html", {"reserva": reserva})
 
 
+@login_required(login_url="iniciar_sesion")
 def realizar_reserva(request):
     habitacion_id = request.GET.get("habitacion_id")
     if not habitacion_id:

@@ -7,7 +7,7 @@ class Habitacion(models.Model):
     numero = models.CharField(max_length=10, unique=True)
     tipo = models.CharField(max_length=50)
     capacidad = models.IntegerField()
-    descrpcion = models.TextField()
+    descripcion = models.TextField()
     estado = models.CharField(
         max_length=20,
         choices=[("disponible", "Disponible"), ("reservada", "Reservada")],
