@@ -9,6 +9,9 @@ from django.contrib.auth.decorators import (
 from django.shortcuts import render, get_object_or_404
 from habitaciones.forms.realizar_reserva_form import RealizarReservaForm
 from habitaciones.models.models import Habitacion
+from habitaciones.forms.agregarConsumoAdicional import ConsumoAdicionalForm
+from django.http import Http404
+from django.utils import timezone
 
 
 @login_required(login_url="iniciar_sesion")
@@ -52,3 +55,34 @@ def realizar_reserva(request):
     return render(
         request, "realizar_reserva.html", {"form": form, "habitacion": habitacion}
     )
+
+
+@login_required(login_url="iniciar_sesion")
+def crear_consumo_por_habitacion(request, habitacion_id):
+    hoy = timezone.now().date()
+
+    # Buscar la reserva activa para esta habitación (hoy dentro de las fechas de reserva)
+    reserva = Reserva.objects.filter(  # pylint: disable=no-member
+        habitacion_id=habitacion_id, fecha_inicio__lte=hoy, fecha_fin__gte=hoy
+    ).first()
+
+    if not reserva:
+        # Si no hay reserva activa, lanzar error 404
+        raise Http404("No hay una reserva activa para esta habitación.")
+
+    if request.method == "POST":
+        form = ConsumoAdicionalForm(request.POST)
+        if form.is_valid():
+            consumo = form.save(commit=False)
+            consumo.reserva = reserva
+            consumo.usuario = request.user
+            consumo.save()
+            return redirect("panel_de_usuario")
+    else:
+        initial_data = {
+            "reserva": reserva,
+            "usuario": request.user,
+        }
+        form = ConsumoAdicionalForm(initial=initial_data)
+
+    return render(request, "agregar_consumo.html", {"form": form, "reserva": reserva})

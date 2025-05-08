@@ -26,4 +26,4 @@ class Reserva(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"Reserva {self.habitacion.id}"  # pylint: disable=no-member
+        return f"Reserva de la habitación {self.habitacion.numero} para {self.cliente.nombre} {self.cliente.apellido}"  # pylint: disable=no-member

@@ -1,5 +1,4 @@
 {% extends 'base.html' %}
-
 {% load static %}
 
 {% block title %}Panel de Usuario{% endblock %}
@@ -13,12 +12,11 @@
 <!-- Formulario de filtros -->
 <form method="get">
   {{ habitacionesForm.as_p }}
-  <button type="submit">Filtrar</button>
+  <button type="submit" class="btn btn-secondary">Filtrar</button>
 </form>
 
 <hr>
 
-<!-- Mostrar habitaciones -->
 <!-- Mostrar habitaciones -->
 {% if habitacion %}
 <div class="contenedor-habitaciones">
@@ -27,13 +25,15 @@
     <h2>Habitación {{ h.numero }}</h2>
     <p><strong>Tipo:</strong> {{ h.tipo }}</p>
     <p><strong>Capacidad:</strong> {{ h.capacidad }}</p>
-    <p><strong>Descripción:</strong> {{ h.descrpcion }}</p>
+    <p><strong>Descripción:</strong> {{ h.descripcion }}</p>
     <p><strong>Estado:</strong> {{ h.estado }}</p>
 
     {% if h.estado == 'reservada' %}
-    <a href="{% url 'ver_cuenta' h.id %}" class="btn btn-success">Ver Cuenta</a>
+    <a href="{% url 'ver_cuenta' h.id %}" class="btn btn-info">Ver Cuenta</a>
+    <a href="{% url 'crear_consumo_habitacion' h.id %}" class="btn btn-warning">Agregar Consumo/servicio</a>
+
     {% else %}
-    <a href="{% url 'realizar_reserva' %}?habitacion_id={{ h.id }}" class="btn btn-primary">Realizar Reserva</a>
+    <a href="{% url 'realizar_reserva' %}?habitacion_id={{ h.id }}" class="btn btn-dark">Realizar Reserva</a>
     {% endif %}
 
   </div>

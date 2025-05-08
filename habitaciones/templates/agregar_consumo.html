@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Agregar Consumo Adicional{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/panel_de_usuario.css' %}">
+
+<h1>Agregar Consumo Adicional</h1>
+
+<form method="post">
+  {% csrf_token %}
+  {{ form.as_p }}
+
+  <button type="submit" class="btn btn-primary">Registrar Consumo</button>
+  <a href="{% url 'panel_de_usuario' %}" class="btn btn-secondary">Cancelar</a>
+</form>
+
+{% endblock %}
