@@ -8,6 +8,11 @@ class Habitacion(models.Model):
     tipo = models.CharField(max_length=50)
     capacidad = models.IntegerField()
     descrpcion = models.TextField()
+    estado = models.CharField(
+        max_length=20,
+        choices=[("disponible", "Disponible"), ("reservada", "Reservada")],
+        default="disponible",
+    )
 
     def __str__(self):
         return f"Habitacion {self.numero} - {self.tipo}"

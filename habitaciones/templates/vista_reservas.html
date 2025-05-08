@@ -1,0 +1,134 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Reservas{% endblock %}
+
+{% block content %}
+
+<!-- CSS interno -->
+<link rel="stylesheet" href="{% static 'css/vista_clientes.css' %}">
+<style>
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+
+  .btn-container,
+  .btn-filtro-container {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  .btn-crear,
+  .btn-filtros {
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: white;
+    text-decoration: none;
+    border: none;
+    border-radius: 5px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+
+  .btn-crear:hover,
+  .btn-filtros:hover {
+    background-color: #0056b3;
+  }
+
+  .tabla-reservas {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .tabla-reservas th,
+  .tabla-reservas td {
+    padding: 12px;
+    text-align: center;
+    border: 1px solid #ddd;
+  }
+
+  .tabla-reservas th {
+    background-color: #007bff;
+    color: white;
+  }
+
+  .tabla-reservas tr:nth-child(even) {
+    background-color: #f9f9f9;
+  }
+
+  .tabla-reservas td a,
+  .tabla-reservas td button {
+    padding: 5px 10px;
+    border-radius: 5px;
+    text-decoration: none;
+    font-size: 0.9rem;
+    border: none;
+    cursor: pointer;
+  }
+
+  .btn-ver {
+    background-color: #17a2b8;
+    color: white;
+  }
+
+  .btn-eliminar {
+    background-color: #dc3545;
+    color: white;
+  }
+
+  @media (max-width: 768px) {
+    .tabla-reservas {
+      font-size: 0.9rem;
+    }
+  }
+</style>
+
+<div class="container">
+  <h1>Listado de Reservas</h1>
+  <p>Bienvenido al panel de reservas.</p>
+
+  <!-- Tabla de reservas -->
+  <div class="reservas-lista">
+    {% if reservas %}
+    <table class="tabla-reservas">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Cliente</th>
+          <th>Habitación</th>
+          <th>Usuario</th>
+          <th>Fecha Inicio</th>
+          <th>Fecha Fin</th>
+          <th>Cuenta</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for reserva in reservas %}
+        <tr>
+          <td>{{ reserva.id }}</td>
+          <td>{{ reserva.cliente.nombre }}</td>
+          <td>{{ reserva.habitacion.numero }}</td>
+          <td>{{ reserva.usuario.username }}</td>
+          <td>{{ reserva.fecha_inicio }}</td>
+          <td>{{ reserva.fecha_fin }}</td>
+          <td>
+            <button class="btn-ver">Ver Cuenta</button>
+          </td>
+          <td>
+            <a href="#" class="btn-eliminar">Eliminar</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p>No hay reservas registradas.</p>
+    {% endif %}
+  </div>
+</div>
+
+{% endblock %}

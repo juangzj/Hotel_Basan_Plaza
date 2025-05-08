@@ -19,6 +19,7 @@
 <hr>
 
 <!-- Mostrar habitaciones -->
+<!-- Mostrar habitaciones -->
 {% if habitacion %}
 <div class="contenedor-habitaciones">
   {% for h in habitacion %}
@@ -27,6 +28,14 @@
     <p><strong>Tipo:</strong> {{ h.tipo }}</p>
     <p><strong>Capacidad:</strong> {{ h.capacidad }}</p>
     <p><strong>Descripción:</strong> {{ h.descrpcion }}</p>
+    <p><strong>Estado:</strong> {{ h.estado }}</p>
+
+    {% if h.estado == 'reservada' %}
+    <a href="{% url 'ver_cuenta' h.id %}" class="btn btn-success">Ver Cuenta</a>
+    {% else %}
+    <a href="{% url 'realizar_reserva' %}?habitacion_id={{ h.id }}" class="btn btn-primary">Realizar Reserva</a>
+    {% endif %}
+
   </div>
   {% endfor %}
 </div>
