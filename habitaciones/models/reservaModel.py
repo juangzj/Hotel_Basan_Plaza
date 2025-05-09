@@ -3,6 +3,7 @@ from habitaciones.models.models import Habitacion
 from django.contrib.auth.models import User
 from clientes.models import Cliente
 from habitaciones.models.tarifasModelo import Tarifa  # Importar el modelo Tarifa
+from django.utils import timezone
 
 
 # Reservas
@@ -16,6 +17,14 @@ class Reserva(models.Model):
     precio_total = models.DecimalField(
         max_digits=10, decimal_places=2, null=True, blank=True
     )
+    pagado = models.BooleanField(default=False)
+
+    @staticmethod
+    def obtener_reserva_activa(habitacion_id):
+        ahora = timezone.now()
+        return Reserva.objects.filter(  # pylint: disable=no-member
+            habitacion_id=habitacion_id, fecha_inicio__lte=ahora, fecha_fin__gte=ahora
+        ).first()
 
     def save(self, *args, **kwargs):
         # Cambiar estado de la habitación a 'reservada'

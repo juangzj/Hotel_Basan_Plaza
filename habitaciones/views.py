@@ -12,18 +12,14 @@ from habitaciones.models.models import Habitacion
 from habitaciones.forms.agregarConsumoAdicional import ConsumoAdicionalForm
 from django.http import Http404
 from django.utils import timezone
+from habitaciones.models.consumosAdicionalesModelo import ConsumoAdicional
+from django.contrib import messages
 
 
 @login_required(login_url="iniciar_sesion")
 def vista_reservas(request):
     reservas = Reserva.objects.all()  # pylint: disable=no-member
     return render(request, "vista_reservas.html", {"reservas": reservas})
-
-
-@login_required(login_url="iniciar_sesion")
-def ver_cuenta(request, id):
-    reserva = get_object_or_404(Reserva, id=id)  # Obtén la reserva usando el id
-    return render(request, "ver_cuenta.html", {"reserva": reserva})
 
 
 @login_required(login_url="iniciar_sesion")
@@ -59,30 +55,104 @@ def realizar_reserva(request):
 
 @login_required(login_url="iniciar_sesion")
 def crear_consumo_por_habitacion(request, habitacion_id):
-    hoy = timezone.now().date()
+    try:
+        # Buscar la reserva activa usando el método del modelo
+        reserva = Reserva.obtener_reserva_activa(habitacion_id)
 
-    # Buscar la reserva activa para esta habitación (hoy dentro de las fechas de reserva)
-    reserva = Reserva.objects.filter(  # pylint: disable=no-member
-        habitacion_id=habitacion_id, fecha_inicio__lte=hoy, fecha_fin__gte=hoy
-    ).first()
-
-    if not reserva:
-        # Si no hay reserva activa, lanzar error 404
-        raise Http404("No hay una reserva activa para esta habitación.")
-
-    if request.method == "POST":
-        form = ConsumoAdicionalForm(request.POST)
-        if form.is_valid():
-            consumo = form.save(commit=False)
-            consumo.reserva = reserva
-            consumo.usuario = request.user
-            consumo.save()
+        if not reserva:
+            messages.error(request, "No hay una reserva activa para esta habitación.")
             return redirect("panel_de_usuario")
-    else:
-        initial_data = {
-            "reserva": reserva,
-            "usuario": request.user,
-        }
-        form = ConsumoAdicionalForm(initial=initial_data)
 
-    return render(request, "agregar_consumo.html", {"form": form, "reserva": reserva})
+        if request.method == "POST":
+            form = ConsumoAdicionalForm(request.POST)
+            if form.is_valid():
+                consumo = form.save(commit=False)
+                consumo.reserva = reserva
+                consumo.usuario = request.user
+                consumo.save()
+
+                messages.success(request, "Consumo adicional agregado correctamente.")
+                return redirect("panel_de_usuario")
+            else:
+                messages.error(request, "Por favor corrige los errores del formulario.")
+        else:
+            initial_data = {
+                "reserva": reserva,
+                "usuario": request.user,
+            }
+            form = ConsumoAdicionalForm(initial=initial_data)
+
+        return render(
+            request, "agregar_consumo.html", {"form": form, "reserva": reserva}
+        )
+
+    except Exception as e:
+        messages.error(request, f"Ocurrió un error inesperado: {str(e)}")
+        return redirect("panel_de_usuario")
+
+
+@login_required(login_url="iniciar_sesion")
+def ver_cuenta(request, habitacion_id):
+    try:
+        hoy = timezone.now()
+
+        # Buscar la reserva activa con pagado = False
+        reserva = Reserva.objects.filter(
+            habitacion_id=habitacion_id,
+            fecha_inicio__lte=hoy,
+            fecha_fin__gte=hoy,
+            pagado=False,
+        ).first()
+
+        if not reserva:
+            messages.error(
+                request,
+                "No hay una reserva activa pendiente de pago para esta habitación.",
+            )
+            return redirect("panel_de_usuario")
+
+        # Calcular noches
+        noches = (reserva.fecha_fin.date() - reserva.fecha_inicio.date()).days
+
+        # Valor del hospedaje
+        valor_hospedaje = (
+            reserva.tarifa.precio_por_noche * noches if reserva.tarifa else 0
+        )
+
+        # Consumos adicionales
+        consumos = ConsumoAdicional.objects.filter(reserva=reserva)
+
+        # Consumos adicionales con total calculado
+        consumos_con_total = [
+            {
+                "descripcion": consumo.descripcion,
+                "cantidad": consumo.cantidad,
+                "precio_unitario": consumo.precio_unitario,
+                "total": consumo.precio_unitario * consumo.cantidad,
+            }
+            for consumo in consumos
+        ]
+
+        # Total consumos
+        total_consumos = sum(consumo["total"] for consumo in consumos_con_total)
+
+        # Total general
+        total_general = valor_hospedaje + total_consumos
+
+        # Actualizar el precio total de la reserva
+        reserva.precio_total = total_general
+        reserva.save()
+
+        contexto = {
+            "reserva": reserva,
+            "valor_hospedaje": valor_hospedaje,
+            "consumos": consumos_con_total,
+            "total_consumos": total_consumos,
+            "total_general": total_general,
+        }
+
+        return render(request, "ver_cuenta.html", contexto)
+
+    except Exception as e:
+        messages.error(request, f"Ocurrió un error inesperado: {str(e)}")
+        return redirect("panel_de_usuario")

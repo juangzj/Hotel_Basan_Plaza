@@ -1,6 +1,65 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
 
 {% block content %}
-<h1>Cuenta de la reserva</h1>
 
-{% endblock%}
+<div class="container mt-4">
+  <h1>Cuenta de la Reserva</h1>
+
+  <hr>
+
+  <h3>Datos de la Reserva</h3>
+  <p><strong>Cliente:</strong> {{ reserva.cliente.nombre }} {{ reserva.cliente.apellido }}</p>
+  <p><strong>Habitación:</strong> {{ reserva.habitacion.numero }}</p>
+  <p><strong>Fecha de Inicio:</strong> {{ reserva.fecha_inicio }}</p>
+  <p><strong>Fecha de Fin:</strong> {{ reserva.fecha_fin }}</p>
+
+  <hr>
+
+  <h3>Hospedaje</h3>
+  <p><strong>Valor por Noche:</strong> ${{ reserva.tarifa.precio_por_noche|floatformat:2 }}</p>
+  <p><strong>Total Hospedaje:</strong> ${{ valor_hospedaje|floatformat:2 }}</p>
+
+  <hr>
+
+  <h3>Consumos Adicionales</h3>
+
+  {% if consumos %}
+  <table class="table table-bordered">
+    <thead>
+      <tr>
+        <th>Descripción</th>
+        <th>Cantidad</th>
+        <th>Precio Unitario</th>
+        <th>Total</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for consumo in consumos %}
+      <tr>
+        <td>{{ consumo.descripcion }}</td>
+        <td>{{ consumo.cantidad }}</td>
+        <td>${{ consumo.precio_unitario|floatformat:2 }}</td>
+        <td>${{ consumo.total|floatformat:2 }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <p><strong>Total Consumos:</strong> ${{ total_consumos|floatformat:2 }}</p>
+  {% else %}
+  <p>No hay consumos adicionales registrados.</p>
+  {% endif %}
+
+  <hr>
+
+  <h3>Total a Pagar</h3>
+  <p><strong>Total Hospedaje:</strong> ${{ valor_hospedaje|floatformat:2 }}</p>
+  <p><strong>Total Consumos:</strong> ${{ total_consumos|floatformat:2 }}</p>
+  <p><strong>Total General:</strong> ${{ total_general|floatformat:2 }}</p>
+
+  <hr>
+
+  <a href="{% url 'panel_de_usuario' %}" class="btn btn-primary">Volver al Panel</a>
+
+</div>
+
+{% endblock %}
