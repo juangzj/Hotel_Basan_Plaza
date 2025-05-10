@@ -10,4 +10,9 @@ urlpatterns = [
         views.crear_consumo_por_habitacion,
         name="crear_consumo_habitacion",
     ),
+    path(
+        "generar_pdf_cuenta/<int:habitacion_id>/",
+        views.generar_pdf_cuenta,
+        name="generar_pdf_cuenta",
+    ),
 ]

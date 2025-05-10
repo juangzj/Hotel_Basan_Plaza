@@ -13,6 +13,11 @@ from habitaciones.forms.agregarConsumoAdicional import ConsumoAdicionalForm
 from django.utils import timezone
 from habitaciones.models.consumosAdicionalesModelo import ConsumoAdicional
 from django.contrib import messages
+from django.template.loader import render_to_string
+from django.http import HttpResponse
+from weasyprint import HTML
+from django.template.loader import get_template
+from xhtml2pdf import pisa
 
 
 @login_required(login_url="iniciar_sesion")
@@ -149,4 +154,70 @@ def ver_cuenta(request, habitacion_id):
 
     except Exception as e:
         messages.error(request, f"Ocurrió un error inesperado: {str(e)}")
+        return redirect("panel_de_usuario")
+
+
+@login_required(login_url="iniciar_sesion")
+def generar_pdf_cuenta(request, habitacion_id):
+    try:
+        hoy = timezone.now()
+
+        reserva = Reserva.objects.filter(  # pylint: disable=no-member
+            habitacion_id=habitacion_id,
+            fecha_inicio__lte=hoy,
+            fecha_fin__gte=hoy,
+            pagado=False,
+        ).first()
+
+        if not reserva:
+            messages.error(request, "No hay una reserva activa para esta habitación.")
+            return redirect("panel_de_usuario")
+
+        noches = (reserva.fecha_fin.date() - reserva.fecha_inicio.date()).days
+        valor_hospedaje = (
+            reserva.tarifa.precio_por_noche * noches if reserva.tarifa else 0
+        )
+
+        consumos = ConsumoAdicional.objects.filter(  # pylint: disable=no-member
+            reserva=reserva
+        )  # pylint: disable=no-member
+
+        for consumo in consumos:
+            consumo.total = consumo.precio_unitario * consumo.cantidad
+
+        total_consumos = sum(consumo.total for consumo in consumos)
+        total_general = valor_hospedaje + total_consumos
+
+        reserva.precio_total = total_general
+        reserva.save()
+
+        contexto = {
+            "reserva": reserva,
+            "noches": noches,
+            "valor_hospedaje": valor_hospedaje,
+            "consumos": consumos,
+            "total_consumos": total_consumos,
+            "total_general": total_general,
+        }
+
+        # Renderizar plantilla a string HTML
+        template = get_template("cuenta_pdf.html")
+        html_string = template.render(contexto)
+
+        # Crear respuesta HTTP como PDF
+        response = HttpResponse(content_type="application/pdf")
+        response["Content-Disposition"] = (
+            f'attachment; filename="cuenta_habitacion_{habitacion_id}.pdf"'
+        )
+
+        # Convertir HTML a PDF
+        pisa_status = pisa.CreatePDF(html_string, dest=response)
+
+        if pisa_status.err:
+            return HttpResponse("Error al generar el PDF")
+
+        return response
+
+    except Exception as e:
+        messages.error(request, f"Ocurrió un error: {str(e)}")
         return redirect("panel_de_usuario")

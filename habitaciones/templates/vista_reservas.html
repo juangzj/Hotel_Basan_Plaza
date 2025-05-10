@@ -120,7 +120,7 @@
 
           </td>
           <td>
-            <a href="#" class="btn-eliminar">Eliminar</a>
+            <a href="{% url 'generar_pdf_cuenta' reserva.habitacion.numero %}" class="btn btn-warning">PDF</a>
           </td>
         </tr>
         {% endfor %}

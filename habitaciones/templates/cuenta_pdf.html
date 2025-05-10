@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Cuenta de la Reserva</title>
+  {% load formatos %}
+  <style>
+    body {
+      font-family: Helvetica, sans-serif;
+      font-size: 12px;
+      margin: 20px;
+    }
+
+    h1,
+    h3 {
+      text-align: center;
+    }
+
+    h2 {
+      margin-top: 40px;
+      font-size: 18px;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: auto;
+    }
+
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+
+    .table,
+    th,
+    td {
+      border: 1px solid #333;
+    }
+
+    th,
+    td {
+      padding: 8px;
+      text-align: left;
+      word-wrap: break-word;
+      white-space: normal;
+    }
+
+    th {
+      background-color: #f2f2f2;
+    }
+
+    .total {
+      text-align: right;
+      font-weight: bold;
+      margin-top: 20px;
+    }
+
+    .resumen {
+      margin-top: 30px;
+    }
+
+    .btn {
+      background-color: #007bff;
+      color: white;
+      padding: 10px 20px;
+      text-decoration: none;
+      display: inline-block;
+      border-radius: 5px;
+      margin-top: 30px;
+      text-align: center;
+    }
+
+    .btn:hover {
+      background-color: #0056b3;
+    }
+
+    hr {
+      border: 1px solid #ddd;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+    <h1>Cuenta de la Reserva</h1>
+    <hr>
+
+    <h3>Datos de la Reserva</h3>
+    <p><strong>Cliente:</strong> {{ reserva.cliente.nombre }} {{ reserva.cliente.apellido }}</p>
+    <p><strong>Habitación:</strong> {{ reserva.habitacion.numero }}</p>
+    <p><strong>Fecha de Inicio:</strong> {{ reserva.fecha_inicio|date:"d/m/Y" }}</p>
+    <p><strong>Fecha de Fin:</strong> {{ reserva.fecha_fin|date:"d/m/Y" }}</p>
+
+    <hr>
+
+    <h3>Hospedaje</h3>
+    <p><strong>Valor por Noche:</strong> ${{ reserva.tarifa.precio_por_noche|formatear_pesos }}</p>
+    <p><strong>Total Hospedaje:</strong> ${{ valor_hospedaje|formatear_pesos }}</p>
+
+    <hr>
+
+    <h3>Consumos Adicionales</h3>
+
+    {% if consumos %}
+    <table class="table table-bordered">
+      <thead>
+        <tr>
+          <th>Descripción</th>
+          <th>Cantidad</th>
+          <th>Precio Unitario</th>
+          <th>Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for consumo in consumos %}
+        <tr>
+          <td>{{ consumo.descripcion }}</td>
+          <td>{{ consumo.cantidad }}</td>
+          <td>${{ consumo.precio_unitario|formatear_pesos }}</td>
+          <td>${{ consumo.total|formatear_pesos }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <p><strong>Total Consumos:</strong> ${{ total_consumos|formatear_pesos }}</p>
+    {% else %}
+    <p>No hay consumos adicionales registrados.</p>
+    {% endif %}
+
+    <hr>
+
+    <h3>Total a Pagar</h3>
+    <p><strong>Total Hospedaje:</strong> ${{ valor_hospedaje|formatear_pesos }}</p>
+    <p><strong>Total Consumos:</strong> ${{ total_consumos|formatear_pesos }}</p>
+    <p><strong>Total General:</strong> ${{ total_general|formatear_pesos }}</p>
+
+    <hr>
+
+
+  </div>
+
+</body>
+
+</html>
