@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load formatos %}
 
 {% block content %}
 
@@ -16,8 +17,8 @@
   <hr>
 
   <h3>Hospedaje</h3>
-  <p><strong>Valor por Noche:</strong> ${{ reserva.tarifa.precio_por_noche|floatformat:2 }}</p>
-  <p><strong>Total Hospedaje:</strong> ${{ valor_hospedaje|floatformat:2 }}</p>
+  <p><strong>Valor por Noche:</strong> ${{ reserva.tarifa.precio_por_noche|formatear_pesos }}</p>
+  <p><strong>Total Hospedaje:</strong> ${{ valor_hospedaje|formatear_pesos }}</p>
 
   <hr>
 
@@ -38,13 +39,13 @@
       <tr>
         <td>{{ consumo.descripcion }}</td>
         <td>{{ consumo.cantidad }}</td>
-        <td>${{ consumo.precio_unitario|floatformat:2 }}</td>
-        <td>${{ consumo.total|floatformat:2 }}</td>
+        <td>${{ consumo.precio_unitario|formatear_pesos }}</td>
+        <td>${{ consumo.total|formatear_pesos }}</td>
       </tr>
       {% endfor %}
     </tbody>
   </table>
-  <p><strong>Total Consumos:</strong> ${{ total_consumos|floatformat:2 }}</p>
+  <p><strong>Total Consumos:</strong> ${{ total_consumos|formatear_pesos }}</p>
   {% else %}
   <p>No hay consumos adicionales registrados.</p>
   {% endif %}
@@ -52,9 +53,9 @@
   <hr>
 
   <h3>Total a Pagar</h3>
-  <p><strong>Total Hospedaje:</strong> ${{ valor_hospedaje|floatformat:2 }}</p>
-  <p><strong>Total Consumos:</strong> ${{ total_consumos|floatformat:2 }}</p>
-  <p><strong>Total General:</strong> ${{ total_general|floatformat:2 }}</p>
+  <p><strong>Total Hospedaje:</strong> ${{ valor_hospedaje|formatear_pesos }}</p>
+  <p><strong>Total Consumos:</strong> ${{ total_consumos|formatear_pesos }}</p>
+  <p><strong>Total General:</strong> ${{ total_general|formatear_pesos }}</p>
 
   <hr>
 

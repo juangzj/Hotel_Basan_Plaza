@@ -2,15 +2,14 @@ from habitaciones.models.reservaModel import Reserva  # Importar el modelo Reser
 from django.shortcuts import (
     render,
     redirect,
+    get_object_or_404,
 )  # Importar render y redirect para manejar vistas
 from django.contrib.auth.decorators import (
     login_required,
 )  # Importar decorador para requerir autenticación
-from django.shortcuts import render, get_object_or_404
 from habitaciones.forms.realizar_reserva_form import RealizarReservaForm
 from habitaciones.models.models import Habitacion
 from habitaciones.forms.agregarConsumoAdicional import ConsumoAdicionalForm
-from django.http import Http404
 from django.utils import timezone
 from habitaciones.models.consumosAdicionalesModelo import ConsumoAdicional
 from django.contrib import messages
@@ -97,7 +96,7 @@ def ver_cuenta(request, habitacion_id):
         hoy = timezone.now()
 
         # Buscar la reserva activa con pagado = False
-        reserva = Reserva.objects.filter(
+        reserva = Reserva.objects.filter(  # pylint: disable=no-member
             habitacion_id=habitacion_id,
             fecha_inicio__lte=hoy,
             fecha_fin__gte=hoy,
@@ -120,21 +119,16 @@ def ver_cuenta(request, habitacion_id):
         )
 
         # Consumos adicionales
-        consumos = ConsumoAdicional.objects.filter(reserva=reserva)
+        consumos = ConsumoAdicional.objects.filter(  # pylint: disable=no-member
+            reserva=reserva
+        )  # pylint: disable=no-member
 
-        # Consumos adicionales con total calculado
-        consumos_con_total = [
-            {
-                "descripcion": consumo.descripcion,
-                "cantidad": consumo.cantidad,
-                "precio_unitario": consumo.precio_unitario,
-                "total": consumo.precio_unitario * consumo.cantidad,
-            }
-            for consumo in consumos
-        ]
+        # Agregar total por consumo a cada objeto
+        for consumo in consumos:
+            consumo.total = consumo.precio_unitario * consumo.cantidad
 
         # Total consumos
-        total_consumos = sum(consumo["total"] for consumo in consumos_con_total)
+        total_consumos = sum(consumo.total for consumo in consumos)
 
         # Total general
         total_general = valor_hospedaje + total_consumos
@@ -146,7 +140,7 @@ def ver_cuenta(request, habitacion_id):
         contexto = {
             "reserva": reserva,
             "valor_hospedaje": valor_hospedaje,
-            "consumos": consumos_con_total,
+            "consumos": consumos,
             "total_consumos": total_consumos,
             "total_general": total_general,
         }

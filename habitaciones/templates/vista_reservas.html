@@ -116,7 +116,8 @@
           <td>{{ reserva.fecha_inicio }}</td>
           <td>{{ reserva.fecha_fin }}</td>
           <td>
-            <button class="btn-ver">Ver Cuenta</button>
+            <a href="{% url 'ver_cuenta' reserva.habitacion.numero %}" class="btn-ver">Ver cuenta</a>
+
           </td>
           <td>
             <a href="#" class="btn-eliminar">Eliminar</a>
