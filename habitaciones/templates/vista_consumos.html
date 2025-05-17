@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+  <h1>Consumos Adicionales de la Habitación {{ habitacion.numero }}</h1>
+  <h4>Reserva para {{ reserva.cliente.nombre }} {{ reserva.cliente.apellido }}</h4>
+
+  {% if consumos %}
+  <table class="table table-bordered">
+    <thead>
+      <tr>
+        <th>Descripción</th>
+        <th>Cantidad</th>
+        <th>Precio Unitario</th>
+        <th>Total</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for consumo in consumos %}
+      <tr>
+        <td>{{ consumo.descripcion }}</td>
+        <td>{{ consumo.cantidad }}</td>
+        <td>${{ consumo.precio_unitario }}</td>
+        <td>${{ consumo.total }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <!-- Paginación -->
+  <nav aria-label="Page navigation">
+    <ul class="pagination">
+      {% if consumos.has_previous %}
+      <li class="page-item">
+        <a class="page-link" href="?page={{ consumos.previous_page_number }}">Anterior</a>
+      </li>
+      {% endif %}
+
+      <li class="page-item disabled">
+        <a class="page-link" href="#">{{ consumos.number }} de {{ consumos.paginator.num_pages }}</a>
+      </li>
+
+      {% if consumos.has_next %}
+      <li class="page-item">
+        <a class="page-link" href="?page={{ consumos.next_page_number }}">Siguiente</a>
+      </li>
+      {% endif %}
+    </ul>
+  </nav>
+
+  {% else %}
+  <p>No hay consumos adicionales registrados para esta reserva.</p>
+  {% endif %}
+
+  <a href="{% url 'panel_de_usuario' %}" class="btn btn-primary mt-3">Volver al Panel</a>
+</div>
+{% endblock %}

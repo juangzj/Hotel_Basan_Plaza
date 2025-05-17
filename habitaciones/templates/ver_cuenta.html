@@ -5,13 +5,17 @@
 
 <div class="container mt-4">
   <h1>Cuenta de la Reserva</h1>
-  <hr>
 
+  <a href="{% url 'panel_de_usuario' %}" class="btn btn-primary">Volver al Panel</a>
+  <a href="{% url 'realizar_cobro' reserva.habitacion.id %}" class="btn btn-success ms-2">Realizar Cobro</a>
+  <a href="{% url 'generar_pdf_cuenta' reserva.habitacion.numero %}" class="btn btn-warning ms-2">Descargar PDF</a>
+  <hr>
   <h3>Datos de la Reserva</h3>
   <p><strong>Cliente:</strong> {{ reserva.cliente.nombre }} {{ reserva.cliente.apellido }}</p>
   <p><strong>Habitación:</strong> {{ reserva.habitacion.numero }}</p>
   <p><strong>Fecha de Inicio:</strong> {{ reserva.fecha_inicio|date:"d/m/Y" }}</p>
   <p><strong>Fecha de Fin:</strong> {{ reserva.fecha_fin|date:"d/m/Y" }}</p>
+  <p><strong>Noches de Hospedaje:</strong> {{ noches }}</p>
 
   <hr>
 
@@ -44,6 +48,9 @@
       {% endfor %}
     </tbody>
   </table>
+  <a href="{% url 'ver_consumos' reserva.id %}" class="btn btn-secondary">Modificar
+    Consumos</a>
+  <a href="{% url 'realizar_cobro' reserva.habitacion.id %}" class="btn btn-success ms-2">Realizar Cobro</a>
   <p><strong>Total Consumos:</strong> ${{ total_consumos|formatear_pesos }}</p>
   {% else %}
   <p>No hay consumos adicionales registrados.</p>
@@ -58,8 +65,8 @@
 
   <hr>
 
-  <a href="{% url 'panel_de_usuario' %}" class="btn btn-primary">Volver al Panel</a>
-  <a href="{% url 'generar_pdf_cuenta' reserva.habitacion.numero %}" class="btn btn-warning ms-2">Descargar PDF</a>
+
+
 
 </div>
 

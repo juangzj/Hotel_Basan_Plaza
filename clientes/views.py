@@ -8,17 +8,24 @@ from .forms.crearUsuarioForm import (
     CrearUsuarioForm,
 )  # Importar el formulario de creación de usuario
 from django.contrib import messages  # Importar mensajes para mostrar notificaciones
+from django.core.paginator import Paginator
 
 
-# Funcion para renderizar la vista de clientes
+# Vista para mostrar clientes con filtro
 @login_required(login_url="iniciar_sesion")
 def vista_clientes(request):
     cliente_filter = ClienteFilter(
-        request.GET, queryset=Cliente.objects.all()  # pylint: disable=E1101
-    )  # Crear una instancia del filtro de clientes
+        request.GET, queryset=Cliente.objects.all()
+    )  # pylint: disable=no-member
+
+    # Paginación
+    paginator = Paginator(cliente_filter.qs, 5)  # 5 clientes por página
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+
     context = {
-        "form": cliente_filter.form,  # Obtener los clientes filtrados
-        "filter": cliente_filter.qs,  # Pasar el filtro al contexto
+        "form": cliente_filter.form,
+        "filter": page_obj,  # Pasamos el paginado, no el queryset completo
     }
     return render(request, "vista_clientes.html", context)
 

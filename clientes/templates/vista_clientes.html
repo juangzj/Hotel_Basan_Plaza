@@ -5,7 +5,6 @@
 
 {% block content %}
 
-<!-- CSS interno -->
 <link rel="stylesheet" href="{% static 'css/vista_clientes.css' %}">
 <style>
   .container {
@@ -40,7 +39,6 @@
 
   .filter-form {
     display: none;
-    /* Oculto por defecto */
     flex-wrap: wrap;
     gap: 20px;
     justify-content: flex-start;
@@ -128,6 +126,34 @@
     color: white;
   }
 
+  .pagination {
+    margin-top: 20px;
+    text-align: center;
+  }
+
+  .pagination ul {
+    list-style: none;
+    padding: 0;
+    display: inline-flex;
+    gap: 10px;
+  }
+
+  .pagination li {
+    display: inline;
+  }
+
+  .pagination a {
+    padding: 8px 12px;
+    background-color: #007bff;
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
+  }
+
+  .pagination a:hover {
+    background-color: #0056b3;
+  }
+
   @media (max-width: 768px) {
     .filter-form {
       flex-direction: column;
@@ -140,7 +166,6 @@
   }
 </style>
 
-<!-- Script para mostrar/ocultar filtros -->
 <script>
   function toggleFiltros() {
     const form = document.querySelector('.filter-form');
@@ -160,7 +185,6 @@
     <button class="btn-filtros" onclick="toggleFiltros()">Filtros para cliente</button>
   </div>
 
-  <!-- Formulario de filtros oculto hasta que se muestre -->
   <div class="filter-form">
     <form method="get">
       {{ form.as_p }}
@@ -168,7 +192,6 @@
     </form>
   </div>
 
-  <!-- Tabla de clientes -->
   <div class="clientes-lista">
     {% if filter %}
     <table class="tabla-clientes">
@@ -203,6 +226,32 @@
         {% endfor %}
       </tbody>
     </table>
+
+    <!-- Controles de paginación -->
+    <div class="pagination">
+      {% if filter.has_other_pages %}
+      <ul>
+        {% if filter.has_previous %}
+        <li><a href="?page=1{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">&laquo; Primera</a></li>
+        <li><a
+            href="?page={{ filter.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">&lsaquo;
+            Anterior</a></li>
+        {% endif %}
+
+        <li>Página {{ filter.number }} de {{ filter.paginator.num_pages }}</li>
+
+        {% if filter.has_next %}
+        <li><a
+            href="?page={{ filter.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">Siguiente
+            &rsaquo;</a></li>
+        <li><a
+            href="?page={{ filter.paginator.num_pages }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">Última
+            &raquo;</a></li>
+        {% endif %}
+      </ul>
+      {% endif %}
+    </div>
+
     {% else %}
     <p>No hay clientes disponibles.</p>
     {% endif %}

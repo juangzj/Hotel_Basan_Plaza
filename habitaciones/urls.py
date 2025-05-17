@@ -15,4 +15,14 @@ urlpatterns = [
         views.generar_pdf_cuenta,
         name="generar_pdf_cuenta",
     ),
+    path(
+        "realizar_cobro/<int:habitacion_id>/",
+        views.realizar_cobro,
+        name="realizar_cobro",
+    ),
+    path(
+        "ver_consumos/<int:reserva_id>/",
+        views.vista_consumos_adicionales,
+        name="ver_consumos",
+    ),
 ]

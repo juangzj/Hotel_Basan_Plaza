@@ -18,11 +18,22 @@ from django.http import HttpResponse
 from weasyprint import HTML
 from django.template.loader import get_template
 from xhtml2pdf import pisa
+from django.core.paginator import Paginator
 
 
 @login_required(login_url="iniciar_sesion")
 def vista_reservas(request):
-    reservas = Reserva.objects.all()  # pylint: disable=no-member
+    # Traer solo las reservas no pagadas
+    reservas_lista = Reserva.objects.filter(  # pylint: disable=no-member
+        pagado=False
+    ).order_by(  # pylint: disable=no-member
+        "-fecha_inicio"
+    )  # pylint: disable=no-member
+
+    paginator = Paginator(reservas_lista, 10)  # 10 por página
+    page_number = request.GET.get("page")
+    reservas = paginator.get_page(page_number)
+
     return render(request, "vista_reservas.html", {"reservas": reservas})
 
 
@@ -36,35 +47,47 @@ def realizar_reserva(request):
 
     if request.method == "POST":
         form = RealizarReservaForm(request.POST)
+        # Actualizamos las tarifas ANTES de validar
+        form.update_tarifas(habitacion_id)
+
         if form.is_valid():
             reserva = form.save(commit=False)
             reserva.usuario = request.user
             reserva.habitacion = habitacion
             reserva.save()
 
-            # Cambiar estado de la habitación
             habitacion.estado = "reservada"
             habitacion.save()
 
             return redirect("vista_reservas")
     else:
-        form = RealizarReservaForm(
-            initial={"habitacion": habitacion, "usuario": request.user}
-        )
+        form = RealizarReservaForm(initial={"usuario": request.user})
+        form.update_tarifas(habitacion_id)
 
     return render(
-        request, "realizar_reserva.html", {"form": form, "habitacion": habitacion}
+        request,
+        "realizar_reserva.html",
+        {"form": form, "habitacion": habitacion},
     )
+
+
+# Funcion para agregar un consumo adicional a una reserva
+# Se asume que la reserva ya fue creada y está pendiente de pago
+# Se debe verificar que la habitación esté ocupada y que la reserva no haya sido pagada
 
 
 @login_required(login_url="iniciar_sesion")
 def crear_consumo_por_habitacion(request, habitacion_id):
     try:
-        # Buscar la reserva activa usando el método del modelo
-        reserva = Reserva.obtener_reserva_activa(habitacion_id)
+        # Buscar la reserva pendiente de pago (sin importar fechas)
+        reserva = Reserva.objects.filter(  # pylint: disable=no-member
+            habitacion_id=habitacion_id, pagado=False
+        ).first()
 
         if not reserva:
-            messages.error(request, "No hay una reserva activa para esta habitación.")
+            messages.error(
+                request, "No hay una reserva pendiente de pago para esta habitación."
+            )
             return redirect("panel_de_usuario")
 
         if request.method == "POST":
@@ -95,17 +118,15 @@ def crear_consumo_por_habitacion(request, habitacion_id):
         return redirect("panel_de_usuario")
 
 
+# Funcion para ver la cuenta de la reserva
+# Se asume que la reserva ya fue creada y está pendiente de pago
+# Se debe verificar que la habitación esté ocupada y que la reserva no haya sido pagada
+# Se debe calcular el total a pagar y mostrarlo al usuario
 @login_required(login_url="iniciar_sesion")
 def ver_cuenta(request, habitacion_id):
     try:
-        hoy = timezone.now()
-
-        # Buscar la reserva activa con pagado = False
         reserva = Reserva.objects.filter(  # pylint: disable=no-member
-            habitacion_id=habitacion_id,
-            fecha_inicio__lte=hoy,
-            fecha_fin__gte=hoy,
-            pagado=False,
+            habitacion_id=habitacion_id, pagado=False
         ).first()
 
         if not reserva:
@@ -123,27 +144,23 @@ def ver_cuenta(request, habitacion_id):
             reserva.tarifa.precio_por_noche * noches if reserva.tarifa else 0
         )
 
-        # Consumos adicionales
         consumos = ConsumoAdicional.objects.filter(  # pylint: disable=no-member
             reserva=reserva
-        )  # pylint: disable=no-member
+        )
 
-        # Agregar total por consumo a cada objeto
         for consumo in consumos:
             consumo.total = consumo.precio_unitario * consumo.cantidad
 
-        # Total consumos
         total_consumos = sum(consumo.total for consumo in consumos)
 
-        # Total general
         total_general = valor_hospedaje + total_consumos
 
-        # Actualizar el precio total de la reserva
         reserva.precio_total = total_general
         reserva.save()
 
         contexto = {
             "reserva": reserva,
+            "noches": noches,
             "valor_hospedaje": valor_hospedaje,
             "consumos": consumos,
             "total_consumos": total_consumos,
@@ -157,6 +174,9 @@ def ver_cuenta(request, habitacion_id):
         return redirect("panel_de_usuario")
 
 
+# Funcion para generar el PDF de la cuenta
+# Se asume que la reserva ya fue creada y está pendiente de pago
+# Se debe verificar que la habitación esté ocupada y que la reserva no haya sido pagada
 @login_required(login_url="iniciar_sesion")
 def generar_pdf_cuenta(request, habitacion_id):
     try:
@@ -221,3 +241,96 @@ def generar_pdf_cuenta(request, habitacion_id):
     except Exception as e:
         messages.error(request, f"Ocurrió un error: {str(e)}")
         return redirect("panel_de_usuario")
+
+
+# Funcion para realizar el cobro de la reserva
+# Se asume que la reserva ya fue creada y está pendiente de pago
+# Se debe verificar que la habitación esté ocupada y que la reserva no haya sido pagada
+# Se debe calcular el total a pagar y mostrarlo al usuario
+@login_required(login_url="iniciar_sesion")
+def realizar_cobro(request, habitacion_id):
+    try:
+        reserva = Reserva.objects.filter(  # pylint: disable=no-member
+            habitacion_id=habitacion_id, pagado=False
+        ).first()
+
+        if not reserva:
+            messages.error(
+                request,
+                "No hay una reserva activa pendiente de pago para esta habitación.",
+            )
+            return redirect("panel_de_usuario")
+
+        # Calcular noches y totales igual que en ver_cuenta
+        noches = (reserva.fecha_fin.date() - reserva.fecha_inicio.date()).days
+        valor_hospedaje = (
+            reserva.tarifa.precio_por_noche * noches if reserva.tarifa else 0
+        )
+
+        consumos = ConsumoAdicional.objects.filter(  # pylint: disable=no-member
+            reserva=reserva
+        )  # pylint: disable=no-member
+        for consumo in consumos:
+            consumo.total = consumo.precio_unitario * consumo.cantidad
+
+        total_consumos = sum(consumo.total for consumo in consumos)
+        total_general = valor_hospedaje + total_consumos
+
+        reserva.precio_total = total_general
+        reserva.save()
+
+        if request.method == "POST":
+            # Confirmar cobro: marcar pagado y liberar habitación
+            reserva.pagado = True
+            reserva.save()
+
+            reserva.habitacion.estado = "disponible"
+            reserva.habitacion.save()
+
+            messages.success(request, "Reserva cobrada correctamente.")
+            return redirect("panel_de_usuario")
+
+        contexto = {
+            "reserva": reserva,
+            "noches": noches,
+            "valor_hospedaje": valor_hospedaje,
+            "consumos": consumos,
+            "total_consumos": total_consumos,
+            "total_general": total_general,
+        }
+
+        return render(request, "realizar_cobro.html", contexto)
+
+    except Exception as e:
+        messages.error(request, f"Ocurrió un error: {str(e)}")
+        return redirect("panel_de_usuario")
+
+
+def vista_consumos_adicionales(request, reserva_id):
+    # Obtener la reserva o error 404
+    reserva = get_object_or_404(Reserva, id=reserva_id)
+
+    # Obtener la habitación asociada para mostrar datos
+    habitacion = reserva.habitacion
+
+    # Obtener consumos asociados a la reserva
+    consumos_query = ConsumoAdicional.objects.filter(reserva=reserva).order_by("fecha")
+
+    # Calcular total en cada consumo
+    consumos = []
+    for consumo in consumos_query:
+        consumo.total = consumo.cantidad * consumo.precio_unitario
+        consumos.append(consumo)
+
+    # Paginador para consumos
+    paginator = Paginator(consumos, 10)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        "habitacion": habitacion,
+        "reserva": reserva,
+        "consumos": page_obj,
+    }
+
+    return render(request, "vista_consumos.html", context)
