@@ -310,16 +310,20 @@ def vista_consumos_adicionales(request, reserva_id):
     # Obtener la reserva o error 404
     reserva = get_object_or_404(Reserva, id=reserva_id)
 
-    # Obtener la habitación asociada para mostrar datos
+    # Obtener la habitación asociada
     habitacion = reserva.habitacion
 
     # Obtener consumos asociados a la reserva
-    consumos_query = ConsumoAdicional.objects.filter(reserva=reserva).order_by("fecha")
+    consumos_query = ConsumoAdicional.objects.filter(  # pylint: disable=no-member
+        reserva=reserva
+    ).order_by("fecha")
 
-    # Calcular total en cada consumo
+    # Calcular total en cada consumo y total general
     consumos = []
+    total_general = 0
     for consumo in consumos_query:
         consumo.total = consumo.cantidad * consumo.precio_unitario
+        total_general += consumo.total
         consumos.append(consumo)
 
     # Paginador para consumos
@@ -331,6 +335,34 @@ def vista_consumos_adicionales(request, reserva_id):
         "habitacion": habitacion,
         "reserva": reserva,
         "consumos": page_obj,
+        "total_general": total_general,
     }
 
     return render(request, "vista_consumos.html", context)
+
+
+@login_required(login_url="iniciar_sesion")
+def eliminar_consumo(request, consumo_id):
+    consumo = get_object_or_404(ConsumoAdicional, id=consumo_id)
+    reserva_id = consumo.reserva.id  # Obtener reserva_id antes de eliminar
+    if request.method == "POST":
+        consumo.delete()
+        messages.success(request, "Consumo eliminado con éxito.")
+        return redirect("ver_consumos", reserva_id=reserva_id)
+    return render(request, "eliminar_consumo.html", {"consumo": consumo})
+
+
+@login_required(login_url="iniciar_sesion")
+def editar_consumo(request, consumo_id):
+    consumo = get_object_or_404(ConsumoAdicional, id=consumo_id)
+
+    if request.method == "POST":
+        form = ConsumoAdicionalForm(request.POST, instance=consumo)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Consumo editado con éxito.")
+            return redirect("ver_consumos", reserva_id=consumo.reserva.id)
+    else:
+        form = ConsumoAdicionalForm(instance=consumo)
+
+    return render(request, "editar_consumo.html", {"form": form, "consumo": consumo})

@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load formatos %}
 
 {% block content %}
 <div class="container mt-4">
@@ -13,6 +14,7 @@
         <th>Cantidad</th>
         <th>Precio Unitario</th>
         <th>Total</th>
+        <th>Acciones</th>
       </tr>
     </thead>
     <tbody>
@@ -20,12 +22,22 @@
       <tr>
         <td>{{ consumo.descripcion }}</td>
         <td>{{ consumo.cantidad }}</td>
-        <td>${{ consumo.precio_unitario }}</td>
-        <td>${{ consumo.total }}</td>
+        <td>${{ consumo.precio_unitario|formatear_pesos }}</td>
+        <td>${{ consumo.total|formatear_pesos }}</td>
+        <td>
+          <a href="{% url 'editar_consumo' consumo.id %}" class="btn btn-warning btn-sm">Editar</a>
+          <a href="{% url 'eliminar_consumo' consumo.id %}" class="btn btn-danger btn-sm">Eliminar</a>
+
+        </td>
       </tr>
       {% endfor %}
     </tbody>
   </table>
+
+  <!-- Total General -->
+  <div class="text-end">
+    <h5><strong>Total General: ${{ total_general|formatear_pesos }}</strong></h5>
+  </div>
 
   <!-- Paginación -->
   <nav aria-label="Page navigation">

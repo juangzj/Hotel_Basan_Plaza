@@ -25,4 +25,14 @@ urlpatterns = [
         views.vista_consumos_adicionales,
         name="ver_consumos",
     ),
+    path(
+        "eliminar_consumo/<int:consumo_id>/",
+        views.eliminar_consumo,
+        name="eliminar_consumo",
+    ),
+    path(
+        "editar_consumo/<int:consumo_id>/",
+        views.editar_consumo,
+        name="editar_consumo",
+    ),
 ]
