@@ -53,20 +53,34 @@ def iniciar_sesion(request):
 # Decorador para requerir autenticación en la vista de panel de usuario
 @login_required(login_url="iniciar_sesion")
 def panel_de_usuario(request):
-    # Verificamos si el usuario está autenticado
-    if request.user.is_authenticated:
-        habitacion_filter = HabitacionFilter(
-            request.GET, queryset=Habitacion.objects.all()  # pylint: disable=E1101
-        )
-        context = {
-            "habitacionesForm": habitacion_filter.form,  # Pasamos las habitaciones filtradas al contexto
-            "habitacion": habitacion_filter.qs,  # Pasamos el filtro al contexto
-        }
-        return render(request, "panel_de_usuario.html", context)
-    else:
-        # Si el usuario no está autenticado, redirigimos a la página de inicio de sesión
-        messages.error(request, "Debes iniciar sesión para acceder a esta página")
-        return redirect("iniciar_sesion")
+    # Obtenemos datos de los filtros desde GET
+    filtro = request.GET.get("filtro")
+    valor = request.GET.get("valor")
+
+    # Consulta base: todas las habitaciones
+    habitaciones = Habitacion.objects.all()
+
+    # Si hay filtros aplicados
+    if filtro and valor:
+        if filtro == "numero":
+            habitaciones = habitaciones.filter(numero__icontains=valor)
+        elif filtro == "tipo":
+            habitaciones = habitaciones.filter(tipo__icontains=valor)
+        elif filtro == "capacidad":
+            if valor.isdigit():
+                habitaciones = habitaciones.filter(capacidad=int(valor))
+            else:
+                habitaciones = habitaciones.none()  # Si no es número, no muestra nada
+        elif filtro == "descripcion":
+            habitaciones = habitaciones.filter(descripcion__icontains=valor)
+        elif filtro == "estado":
+            habitaciones = habitaciones.filter(estado__icontains=valor)
+
+    context = {
+        "habitaciones": habitaciones,
+    }
+
+    return render(request, "panel_de_usuario.html", context)
 
 
 #  Metodo para renderizar la vista de cerrar sesion
