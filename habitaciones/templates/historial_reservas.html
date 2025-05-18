@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+  <h2 class="mb-4">Historial de Reservas</h2>
+
+  <!-- Formulario de filtros si lo deseas en un futuro -->
+  <form method="GET" class="mb-3">
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary">Filtrar</button>
+  </form>
+
+  {% if reservas.has_other_pages %}
+  <div class="mb-3">
+    <nav aria-label="Paginación">
+      <ul class="pagination">
+        {% if reservas.has_previous %}
+        <li class="page-item">
+          <a class="page-link" href="?page={{ reservas.previous_page_number }}">Anterior</a>
+        </li>
+        {% endif %}
+
+        {% for num in reservas.paginator.page_range %}
+        <li class="page-item {% if reservas.number == num %}active{% endif %}">
+          <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+        </li>
+        {% endfor %}
+
+        {% if reservas.has_next %}
+        <li class="page-item">
+          <a class="page-link" href="?page={{ reservas.next_page_number }}">Siguiente</a>
+        </li>
+        {% endif %}
+      </ul>
+    </nav>
+  </div>
+  {% endif %}
+
+  <div class="table-responsive">
+    <table class="table table-bordered table-hover">
+      <thead class="table-dark">
+        <tr>
+          <th>Cliente</th>
+          <th>Habitación</th>
+          <th>Tarifa</th>
+          <th>Registrado por</th>
+          <th>Fecha Inicio</th>
+          <th>Fecha Fin</th>
+          <th>Precio Total</th>
+          <th>Pagado</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for reserva in reservas %}
+        <tr>
+          <td>{{ reserva.cliente.nombre }} {{ reserva.cliente.apellido }}</td>
+          <td>{{ reserva.habitacion.numero }}</td>
+          <td>{{ reserva.tarifa.precio_por_noche }}</td>
+          <td>{{ reserva.usuario.username }}</td>
+          <td>{{ reserva.fecha_inicio|date:"d/m/Y H:i" }}</td>
+          <td>{{ reserva.fecha_fin|date:"d/m/Y H:i" }}</td>
+          <td>${{ reserva.precio_total }}</td>
+          <td>
+            {% if reserva.pagado %}
+            <span class="badge bg-success">Sí</span>
+            {% else %}
+            <span class="badge bg-danger">No</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="8" class="text-center">No hay reservas registradas.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

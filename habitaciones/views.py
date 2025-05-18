@@ -366,3 +366,19 @@ def editar_consumo(request, consumo_id):
         form = ConsumoAdicionalForm(instance=consumo)
 
     return render(request, "editar_consumo.html", {"form": form, "consumo": consumo})
+
+
+# Funcion para ver el historial de reservas
+@login_required(login_url="iniciar_sesion")
+def historial_reservas(request):
+    reservas = Reserva.objects.all().order_by(  # pylint: disable=no-member
+        "-fecha_inicio"
+    )
+    paginator = Paginator(reservas, 5)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        "reservas": page_obj,
+    }
+    return render(request, "historial_reservas.html", context)

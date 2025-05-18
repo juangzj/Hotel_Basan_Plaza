@@ -122,7 +122,7 @@
   <p>Bienvenido al panel de reservas.</p>
 
   <!-- Botón para ver el historial de reservas -->
-  <button class="btn-historial" onclick="window.location.href='#'">Ver historial de reservas</button>
+  <a href="{% url 'historial_reservas' %}" class="btn btn-primary">Ver historial de reservas</a>
 
   <div class="reservas-lista">
     <table class="tabla-reservas">

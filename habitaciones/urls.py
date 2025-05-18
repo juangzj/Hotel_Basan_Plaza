@@ -35,4 +35,5 @@ urlpatterns = [
         views.editar_consumo,
         name="editar_consumo",
     ),
+    path("historial_reservas/", views.historial_reservas, name="historial_reservas"),
 ]
