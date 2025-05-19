@@ -41,11 +41,13 @@
           <td>{{ reserva.fecha_fin }}</td>
           <td>
             <a href="{% url 'ver_cuenta' reserva.habitacion.numero %}" class="btn-ver">Cuenta</a>
+            <a href="{% url 'generar_pdf_cuenta' reserva.habitacion.numero %}" class="btn btn-warning">PDF</a>
+            <a href="{% url 'realizar_cobro' reserva.habitacion.id %}" class="btn btn-success">Cobrar</a>
           </td>
           <td>
             <div style="display: flex; justify-content: center; gap: 8px;">
-              <a href="{% url 'generar_pdf_cuenta' reserva.habitacion.numero %}" class="btn btn-warning">PDF</a>
-              <a href="{% url 'realizar_cobro' reserva.habitacion.id %}" class="btn btn-success">Cobrar</a>
+              <a href="{% url 'editar_reserva' reserva.id %}" class="btn btn-primary btn-sm">Editar</a>
+              <a href="{% url 'eliminar_reserva' reserva.id %}" class="btn btn-sm btn-danger">Eliminar</a>
             </div>
           </td>
         </tr>

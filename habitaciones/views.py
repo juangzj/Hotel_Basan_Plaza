@@ -19,6 +19,7 @@ from weasyprint import HTML
 from django.template.loader import get_template
 from xhtml2pdf import pisa
 from django.core.paginator import Paginator
+from habitaciones.forms.editarReservaForm import EditarReservaForm
 
 
 @login_required(login_url="iniciar_sesion")
@@ -306,6 +307,8 @@ def realizar_cobro(request, habitacion_id):
         return redirect("panel_de_usuario")
 
 
+# Funciopn para ver los consumos adicionales de una reserva
+@login_required(login_url="iniciar_sesion")
 def vista_consumos_adicionales(request, reserva_id):
     # Obtener la reserva o error 404
     reserva = get_object_or_404(Reserva, id=reserva_id)
@@ -341,6 +344,7 @@ def vista_consumos_adicionales(request, reserva_id):
     return render(request, "vista_consumos.html", context)
 
 
+# Funcion para eliminar un consumo adicional
 @login_required(login_url="iniciar_sesion")
 def eliminar_consumo(request, consumo_id):
     consumo = get_object_or_404(ConsumoAdicional, id=consumo_id)
@@ -409,3 +413,35 @@ def historial_reservas(request):
         "valor": valor,
     }
     return render(request, "historial_reservas.html", context)
+
+
+# Funcion para eliminar una reserva
+@login_required(login_url="iniciar_sesion")
+def eliminar_reserva(request, reserva_id):
+    reserva = get_object_or_404(Reserva, id=reserva_id)
+    if request.method == "POST":
+        reserva.delete()
+        messages.success(request, "Reserva eliminada con éxito.")
+        return redirect(
+            "vista_reservas"
+        )  # Redirige a donde tengas tu listado de reservas
+    return render(request, "eliminar_reserva.html", {"reserva": reserva})
+
+
+# funcion para editar una reserva
+@login_required(login_url="iniciar_sesion")
+def editar_reserva(request, reserva_id):
+    reserva = get_object_or_404(Reserva, pk=reserva_id)
+
+    if request.method == "POST":
+        form = EditarReservaForm(request.POST, instance=reserva)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Reserva actualizada correctamente.")
+            return redirect("vista_reservas")
+        else:
+            messages.error(request, "Hubo un error al actualizar la reserva.")
+    else:
+        form = EditarReservaForm(instance=reserva)
+
+    return render(request, "editar_reserva.html", {"form": form, "reserva": reserva})
