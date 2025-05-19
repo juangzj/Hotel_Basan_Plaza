@@ -419,12 +419,19 @@ def historial_reservas(request):
 @login_required(login_url="iniciar_sesion")
 def eliminar_reserva(request, reserva_id):
     reserva = get_object_or_404(Reserva, id=reserva_id)
+
     if request.method == "POST":
+        # Cambiar el estado de la habitación a 'disponible'
+        habitacion = reserva.habitacion
+        habitacion.estado = "disponible"
+        habitacion.save()
+
+        # Eliminar la reserva
         reserva.delete()
-        messages.success(request, "Reserva eliminada con éxito.")
-        return redirect(
-            "vista_reservas"
-        )  # Redirige a donde tengas tu listado de reservas
+
+        messages.success(request, "Reserva eliminada con éxito")
+        return redirect("vista_reservas")
+
     return render(request, "eliminar_reserva.html", {"reserva": reserva})
 
 
