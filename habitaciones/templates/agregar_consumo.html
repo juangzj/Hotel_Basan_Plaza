@@ -6,14 +6,27 @@
 {% block content %}
 <link rel="stylesheet" href="{% static 'css/panel_de_usuario.css' %}">
 
-<h1>Agregar Consumo Adicional</h1>
+<div class="container py-5">
+  <h1 class="text-center mb-4">Agregar Consumo Adicional</h1>
 
-<form method="post">
-  {% csrf_token %}
-  {{ form.as_p }}
+  <div class="row justify-content-center">
+    <div class="col-md-6">
 
-  <button type="submit" class="btn btn-primary">Registrar Consumo</button>
-  <a href="{% url 'panel_de_usuario' %}" class="btn btn-secondary">Cancelar</a>
-</form>
+      <form method="post" class="card p-4 shadow">
+        {% csrf_token %}
+
+        <!-- Renderizado de campos del formulario -->
+        {{ form.as_p }}
+
+        <div class="d-flex justify-content-between mt-4">
+          <a href="{% url 'panel_de_usuario' %}" class="btn btn-secondary">Cancelar</a>
+          <button type="submit" class="btn btn-primary">Registrar Consumo</button>
+
+        </div>
+      </form>
+
+    </div>
+  </div>
+</div>
 
 {% endblock %}

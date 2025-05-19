@@ -9,24 +9,38 @@ from .forms.crearUsuarioForm import (
 )  # Importar el formulario de creación de usuario
 from django.contrib import messages  # Importar mensajes para mostrar notificaciones
 from django.core.paginator import Paginator
+from habitaciones.models.reservaModel import Reserva  # Importar el modelo de reserva
 
 
-# Vista para mostrar clientes con filtro
 @login_required(login_url="iniciar_sesion")
 def vista_clientes(request):
-    cliente_filter = ClienteFilter(
-        request.GET, queryset=Cliente.objects.all()
-    )  # pylint: disable=no-member
+    # Capturamos los valores del formulario GET
+    filtro = request.GET.get("filtro")
+    valor = request.GET.get("valor")
 
-    # Paginación
-    paginator = Paginator(cliente_filter.qs, 5)  # 5 clientes por página
+    clientes = Cliente.objects.all()  # pylint: disable=no-member
+
+    if filtro and valor:
+        if filtro == "nombre":
+            clientes = clientes.filter(nombre__icontains=valor)
+        elif filtro == "apellido":
+            clientes = clientes.filter(apellido__icontains=valor)
+        elif filtro == "email":
+            clientes = clientes.filter(email__icontains=valor)
+        elif filtro == "celular":
+            clientes = clientes.filter(celular__icontains=valor)
+        elif filtro == "numero_documento":
+            clientes = clientes.filter(numero_documento__icontains=valor)
+
+    # Paginación (5 clientes por página)
+    paginator = Paginator(clientes, 5)
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
 
     context = {
-        "form": cliente_filter.form,
-        "filter": page_obj,  # Pasamos el paginado, no el queryset completo
+        "clientes": page_obj,  # Pasamos el paginado, no todo el queryset
     }
+
     return render(request, "vista_clientes.html", context)
 
 
@@ -75,8 +89,22 @@ def editar_cliente(request, cliente_id):
 @login_required(login_url="iniciar_sesion")
 def eliminar_cliente(request, cliente_id):
     cliente = get_object_or_404(Cliente, id=cliente_id)
+
+    # Verificar si el cliente tiene reservas no pagadas
+    reservas_pendientes = Reserva.objects.filter(  # pylint: disable=no-member
+        cliente=cliente, pagado=False
+    )
+
     if request.method == "POST":
-        cliente.delete()
-        messages.success(request, "Cliente eliminado con éxito.")
-        return redirect("vista_clientes")
+        if reservas_pendientes.exists():
+            messages.error(
+                request,
+                "No se puede eliminar este cliente porque tiene reservas pendientes de pago.",
+            )
+            return redirect("vista_clientes")
+        else:
+            cliente.delete()
+            messages.success(request, "Cliente eliminado con éxito.")
+            return redirect("vista_clientes")
+
     return render(request, "eliminar_cliente.html", {"cliente": cliente})

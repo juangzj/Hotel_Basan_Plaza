@@ -7,11 +7,19 @@ class ConsumoAdicionalForm(forms.ModelForm):
         model = ConsumoAdicional
         fields = ["reserva", "usuario", "descripcion", "cantidad", "precio_unitario"]
         widgets = {
+            "reserva": forms.Select(attrs={"class": "form-select"}),
+            "usuario": forms.Select(attrs={"class": "form-select"}),
             "descripcion": forms.Textarea(
-                attrs={"rows": 3, "placeholder": "Detalle del consumo o servicio"}
+                attrs={
+                    "rows": 3,
+                    "placeholder": "Detalle del consumo o servicio",
+                    "class": "form-control",
+                }
             ),
-            "cantidad": forms.NumberInput(attrs={"min": 1}),
-            "precio_unitario": forms.NumberInput(attrs={"step": "0.01"}),
+            "cantidad": forms.NumberInput(attrs={"min": 1, "class": "form-control"}),
+            "precio_unitario": forms.NumberInput(
+                attrs={"step": "0.01", "class": "form-control"}
+            ),
         }
         labels = {
             "reserva": "Reserva asociada",

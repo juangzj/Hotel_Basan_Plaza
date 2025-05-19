@@ -18,7 +18,7 @@ class RealizarReservaForm(forms.ModelForm):
     )
 
     tarifa = forms.ModelChoiceField(
-        queryset=Tarifa.objects.none(),  # Inicialmente vacío
+        queryset=Tarifa.objects.none(),  # Inicialmente vacío # pylint: disable=no-member
         label="Tarifa",
         widget=forms.Select(attrs={"class": "form-control"}),
     )
@@ -52,12 +52,12 @@ class RealizarReservaForm(forms.ModelForm):
         try:
             cliente = Cliente.objects.get(  # pylint: disable=no-member
                 numero_documento=cliente_input
-            )  # pylint: disable=no-member
+            )
         except Cliente.DoesNotExist:  # pylint: disable=no-member
             try:
                 cliente = Cliente.objects.get(  # pylint: disable=no-member
                     nombre__icontains=cliente_input
-                )  # pylint: disable=no-member
+                )
             except Cliente.DoesNotExist:  # pylint: disable=no-member
                 raise forms.ValidationError("Cliente no encontrado.")
 

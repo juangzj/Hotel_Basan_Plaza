@@ -5,208 +5,59 @@
 
 {% block content %}
 
-<link rel="stylesheet" href="{% static 'css/vista_clientes.css' %}">
-<style>
-  .container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 20px;
-  }
+<div class="container py-5">
+  <h1 class="text-center mb-3">Vista de Clientes</h1>
+  <p class="text-center text-muted mb-4">Bienvenido al panel de clientes.</p>
 
-  .btn-container,
-  .btn-filtro-container {
-    text-align: center;
-    margin-bottom: 20px;
-  }
-
-  .btn-crear,
-  .btn-filtros {
-    padding: 10px 20px;
-    background-color: #007bff;
-    color: white;
-    text-decoration: none;
-    border: none;
-    border-radius: 5px;
-    font-size: 1rem;
-    cursor: pointer;
-    transition: background-color 0.3s;
-  }
-
-  .btn-crear:hover,
-  .btn-filtros:hover {
-    background-color: #0056b3;
-  }
-
-  .filter-form {
-    display: none;
-    flex-wrap: wrap;
-    gap: 20px;
-    justify-content: flex-start;
-    margin-bottom: 30px;
-  }
-
-  .filter-form.visible {
-    display: flex;
-  }
-
-  .filter-form .form-group {
-    display: flex;
-    flex-direction: column;
-    min-width: 220px;
-    flex: 1;
-  }
-
-  .filter-form label {
-    font-weight: bold;
-    margin-bottom: 8px;
-  }
-
-  .filter-form input[type="text"] {
-    padding: 10px;
-    font-size: 1rem;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    width: 100%;
-  }
-
-  .filter-form button[type="submit"] {
-    padding: 10px 15px;
-    background-color: #28a745;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    font-size: 1rem;
-    cursor: pointer;
-  }
-
-  .clientes-lista {
-    margin-top: 20px;
-  }
-
-  .tabla-clientes {
-    width: 100%;
-    border-collapse: collapse;
-  }
-
-  .tabla-clientes th,
-  .tabla-clientes td {
-    padding: 12px;
-    text-align: center;
-    border: 1px solid #ddd;
-  }
-
-  .tabla-clientes th {
-    background-color: #007bff;
-    color: white;
-  }
-
-  .tabla-clientes tr:nth-child(even) {
-    background-color: #f9f9f9;
-  }
-
-  .tabla-clientes td a {
-    padding: 5px 10px;
-    border-radius: 5px;
-    text-decoration: none;
-    font-size: 0.9rem;
-  }
-
-  .btn-ver {
-    background-color: #17a2b8;
-    color: white;
-  }
-
-  .btn-editar {
-    background-color: #ffc107;
-    color: black;
-  }
-
-  .btn-eliminar {
-    background-color: #dc3545;
-    color: white;
-  }
-
-  .pagination {
-    margin-top: 20px;
-    text-align: center;
-  }
-
-  .pagination ul {
-    list-style: none;
-    padding: 0;
-    display: inline-flex;
-    gap: 10px;
-  }
-
-  .pagination li {
-    display: inline;
-  }
-
-  .pagination a {
-    padding: 8px 12px;
-    background-color: #007bff;
-    color: white;
-    text-decoration: none;
-    border-radius: 5px;
-  }
-
-  .pagination a:hover {
-    background-color: #0056b3;
-  }
-
-  @media (max-width: 768px) {
-    .filter-form {
-      flex-direction: column;
-      align-items: center;
-    }
-
-    .filter-form .form-group {
-      width: 100%;
-    }
-  }
-</style>
-
-<script>
-  function toggleFiltros() {
-    const form = document.querySelector('.filter-form');
-    form.classList.toggle('visible');
-  }
-</script>
-
-<div class="container">
-  <h1>Vista de Clientes</h1>
-  <p>Bienvenido al panel de clientes.</p>
-
-  <div class="btn-container">
-    <a href="{% url 'crear_cliente' %}" class="btn-crear">Crear Cliente</a>
+  <!-- Botón Crear Cliente -->
+  <div class="text-center mb-4">
+    <a href="{% url 'crear_cliente' %}" class="btn btn-primary">Crear Cliente</a>
   </div>
 
-  <div class="btn-filtro-container">
-    <button class="btn-filtros" onclick="toggleFiltros()">Filtros para cliente</button>
-  </div>
+  <!-- Formulario de Filtros -->
+  <div class="mb-4">
+    <form method="get" class="row g-3 justify-content-center">
+      <div class="col-md-3">
+        <select name="filtro" class="form-select" required>
+          <option value="" selected disabled>Filtrar por...</option>
+          <option value="nombre">Nombre</option>
+          <option value="apellido">Apellido</option>
+          <option value="email">Email</option>
+          <option value="celular">Celular</option>
+          <option value="numero_documento">N° Documento</option>
+        </select>
+      </div>
 
-  <div class="filter-form">
-    <form method="get">
-      {{ form.as_p }}
-      <button type="submit">Filtrar</button>
+      <div class="col-md-5">
+        <input type="text" name="valor" class="form-control" placeholder="Buscar..." required>
+      </div>
+
+      <div class="col-md-2 d-grid">
+        <button type="submit" class="btn btn-dark">Buscar</button>
+      </div>
+
+      <div class="col-md-2 d-grid">
+        <a href="{% url 'vista_clientes' %}" class="btn btn-secondary">Limpiar</a>
+      </div>
     </form>
   </div>
 
-  <div class="clientes-lista">
-    {% if filter %}
-    <table class="tabla-clientes">
-      <thead>
+  <!-- Tabla de clientes -->
+  <div class="table-responsive">
+    {% if clientes %}
+    <table class="table table-hover table-bordered align-middle text-center">
+      <thead class="table-primary">
         <tr>
           <th>Nombre</th>
           <th>Apellido</th>
           <th>Email</th>
           <th>Celular</th>
-          <th>Número de Documento</th>
+          <th>N° Documento</th>
           <th>Acciones</th>
         </tr>
       </thead>
       <tbody>
-        {% for cliente in filter %}
+        {% for cliente in clientes %}
         <tr>
           <td>{{ cliente.nombre }}</td>
           <td>{{ cliente.apellido }}</td>
@@ -214,9 +65,9 @@
           <td>{{ cliente.celular }}</td>
           <td>{{ cliente.numero_documento }}</td>
           <td>
-            <a href="{% url 'ver_cliente' cliente.id %}" class="btn-ver">Ver</a>
-            <a href="{% url 'editar_cliente' cliente.id %}" class="btn-editar">Editar</a>
-            <a href="{% url 'eliminar_cliente' cliente.id %}" class="btn-eliminar">Eliminar</a>
+            <a href="{% url 'ver_cliente' cliente.id %}" class="btn btn-info btn-sm text-white">Ver</a>
+            <a href="{% url 'editar_cliente' cliente.id %}" class="btn btn-warning btn-sm">Editar</a>
+            <a href="{% url 'eliminar_cliente' cliente.id %}" class="btn btn-danger btn-sm">Eliminar</a>
           </td>
         </tr>
         {% empty %}
@@ -227,35 +78,40 @@
       </tbody>
     </table>
 
-    <!-- Controles de paginación -->
-    <div class="pagination">
-      {% if filter.has_other_pages %}
-      <ul>
-        {% if filter.has_previous %}
-        <li><a href="?page=1{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">&laquo; Primera</a></li>
-        <li><a
-            href="?page={{ filter.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">&lsaquo;
-            Anterior</a></li>
+    <!-- Paginación -->
+    <nav>
+      {% if clientes.has_other_pages %}
+      <ul class="pagination justify-content-center">
+        {% if clientes.has_previous %}
+        <li class="page-item">
+          <a class="page-link" href="?page=1">&laquo; Primera</a>
+        </li>
+        <li class="page-item">
+          <a class="page-link" href="?page={{ clientes.previous_page_number }}">&lsaquo; Anterior</a>
+        </li>
         {% endif %}
 
-        <li>Página {{ filter.number }} de {{ filter.paginator.num_pages }}</li>
+        <li class="page-item disabled">
+          <span class="page-link">Página {{ clientes.number }} de {{ clientes.paginator.num_pages }}</span>
+        </li>
 
-        {% if filter.has_next %}
-        <li><a
-            href="?page={{ filter.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">Siguiente
-            &rsaquo;</a></li>
-        <li><a
-            href="?page={{ filter.paginator.num_pages }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">Última
-            &raquo;</a></li>
+        {% if clientes.has_next %}
+        <li class="page-item">
+          <a class="page-link" href="?page={{ clientes.next_page_number }}">Siguiente &rsaquo;</a>
+        </li>
+        <li class="page-item">
+          <a class="page-link" href="?page={{ clientes.paginator.num_pages }}">Última &raquo;</a>
+        </li>
         {% endif %}
       </ul>
       {% endif %}
-    </div>
+    </nav>
 
     {% else %}
-    <p>No hay clientes disponibles.</p>
+    <p class="text-center">No hay clientes disponibles.</p>
     {% endif %}
   </div>
+
 </div>
 
 {% endblock %}

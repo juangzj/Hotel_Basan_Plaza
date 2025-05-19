@@ -352,6 +352,7 @@ def eliminar_consumo(request, consumo_id):
     return render(request, "eliminar_consumo.html", {"consumo": consumo})
 
 
+# funcion para editar un consumo adicional
 @login_required(login_url="iniciar_sesion")
 def editar_consumo(request, consumo_id):
     consumo = get_object_or_404(ConsumoAdicional, id=consumo_id)
@@ -371,14 +372,40 @@ def editar_consumo(request, consumo_id):
 # Funcion para ver el historial de reservas
 @login_required(login_url="iniciar_sesion")
 def historial_reservas(request):
+    filtro = request.GET.get("filtro")
+    valor = request.GET.get("valor")
+
     reservas = Reserva.objects.all().order_by(  # pylint: disable=no-member
         "-fecha_inicio"
     )
+
+    if filtro and valor:
+        if filtro == "cliente":
+            # Asumiendo que Cliente tiene nombre o apellido
+            reservas = reservas.filter(
+                cliente__nombre__icontains=valor
+            ) | reservas.filter(cliente__apellido__icontains=valor)
+        elif filtro == "habitacion":
+            reservas = reservas.filter(habitacion__numero__icontains=valor)
+        elif filtro == "usuario":
+            reservas = reservas.filter(usuario__username__icontains=valor)
+        elif filtro == "pagado":
+            # valor puede ser "sí" o "no"
+            if valor.lower() in ("sí", "si", "true", "1"):
+                reservas = reservas.filter(pagado=True)
+            elif valor.lower() in ("no", "false", "0"):
+                reservas = reservas.filter(pagado=False)
+            else:
+                reservas = reservas.none()
+        # Agrega más filtros si quieres
+
     paginator = Paginator(reservas, 5)
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
 
     context = {
         "reservas": page_obj,
+        "filtro": filtro,
+        "valor": valor,
     }
     return render(request, "historial_reservas.html", context)
