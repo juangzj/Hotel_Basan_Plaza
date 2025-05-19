@@ -1,14 +1,37 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<h1>Realizar Reserva</h1>
+<div class="container mt-5">
+  <div class="card shadow-lg">
+    <div class="card-header bg-primary text-white">
+      <h4 class="mb-0">Realizar Reserva</h4>
+    </div>
+    <div class="card-body">
+      <form method="post">
+        {% csrf_token %}
 
-<form method="post">
-  {% csrf_token %}
-  {{ form.as_p }}
+        {% if form.non_field_errors %}
+        <div class="alert alert-danger">
+          {{ form.non_field_errors }}
+        </div>
+        {% endif %}
 
-  <button type="submit" class="btn btn-primary">Guardar Reserva</button>
-</form>
+        {% for field in form %}
+        <div class="mb-3">
+          <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+          {{ field }}
+          {% if field.errors %}
+          <div class="text-danger small">
+            {{ field.errors|striptags }}
+          </div>
+          {% endif %}
+        </div>
+        {% endfor %}
 
-<a href="{% url 'vista_reservas' %}">Volver a Reservas</a>
+        <button type="submit" class="btn btn-success">Guardar Reserva</button>
+        <a href="{% url 'vista_reservas' %}" class="btn btn-secondary ms-2">Volver a Reservas</a>
+      </form>
+    </div>
+  </div>
+</div>
 {% endblock %}
