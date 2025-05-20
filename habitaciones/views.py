@@ -20,6 +20,7 @@ from django.template.loader import get_template
 from xhtml2pdf import pisa
 from django.core.paginator import Paginator
 from habitaciones.forms.editarReservaForm import EditarReservaForm
+from django.db.models import Q
 
 
 @login_required(login_url="iniciar_sesion")
@@ -376,32 +377,41 @@ def editar_consumo(request, consumo_id):
 # Funcion para ver el historial de reservas
 @login_required(login_url="iniciar_sesion")
 def historial_reservas(request):
-    filtro = request.GET.get("filtro")
-    valor = request.GET.get("valor")
+    filtros = request.GET.getlist("filtros[]")
+    valores = request.GET.getlist("valores[]")
 
     reservas = Reserva.objects.all().order_by(  # pylint: disable=no-member
         "-fecha_inicio"
-    )
+    )  # pylint: disable=no-member
 
-    if filtro and valor:
-        if filtro == "cliente":
-            # Asumiendo que Cliente tiene nombre o apellido
-            reservas = reservas.filter(
-                cliente__nombre__icontains=valor
-            ) | reservas.filter(cliente__apellido__icontains=valor)
-        elif filtro == "habitacion":
-            reservas = reservas.filter(habitacion__numero__icontains=valor)
-        elif filtro == "usuario":
-            reservas = reservas.filter(usuario__username__icontains=valor)
-        elif filtro == "pagado":
-            # valor puede ser "sí" o "no"
-            if valor.lower() in ("sí", "si", "true", "1"):
-                reservas = reservas.filter(pagado=True)
-            elif valor.lower() in ("no", "false", "0"):
-                reservas = reservas.filter(pagado=False)
-            else:
-                reservas = reservas.none()
-        # Agrega más filtros si quieres
+    if filtros and valores and len(filtros) == len(valores):
+        query = Q()
+        for filtro, valor in zip(filtros, valores):
+            if filtro == "cliente":
+                query &= Q(cliente__nombre__icontains=valor) | Q(
+                    cliente__apellido__icontains=valor
+                )
+            elif filtro == "habitacion":
+                query &= Q(habitacion__numero__icontains=valor)
+            elif filtro == "usuario":
+                query &= Q(usuario__username__icontains=valor)
+            elif filtro == "tarifa":
+                query &= Q(tarifa__precio_por_noche__icontains=valor)
+            elif filtro == "fecha_inicio":
+                query &= Q(fecha_inicio__icontains=valor)
+            elif filtro == "fecha_fin":
+                query &= Q(fecha_fin__icontains=valor)
+            elif filtro == "pagado":
+                if valor.lower() in ("sí", "si", "true", "1"):
+                    query &= Q(pagado=True)
+                elif valor.lower() in ("no", "false", "0"):
+                    query &= Q(pagado=False)
+                else:
+                    reservas = (
+                        Reserva.objects.none()  # pylint: disable=no-member
+                    )  # Invalid value
+                    break
+        reservas = reservas.filter(query)
 
     paginator = Paginator(reservas, 5)
     page_number = request.GET.get("page")
@@ -409,8 +419,8 @@ def historial_reservas(request):
 
     context = {
         "reservas": page_obj,
-        "filtro": filtro,
-        "valor": valor,
+        "filtros": filtros,
+        "valores": valores,
     }
     return render(request, "historial_reservas.html", context)
 

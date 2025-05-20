@@ -9,64 +9,34 @@
 <div class="container mt-4">
   <h2 class="mb-4">Historial de Reservas</h2>
 
-  <!-- Formulario de filtros -->
-  <form method="get" class="row g-2 mb-4">
-    <div class="col-md-3">
-      <select name="filtro" class="form-select" required>
-        <option value="" selected disabled>Filtrar por...</option>
-        <option value="cliente">Cliente</option>
-        <option value="habitacion">Habitación</option>
-        <option value="tarifa">Tarifa</option>
-        <option value="usuario">Registrado por</option>
-        <option value="fecha_inicio">Fecha Inicio</option>
-        <option value="fecha_fin">Fecha Fin</option>
-        <option value="pagado">Pagado</option>
-      </select>
-    </div>
-
-    <div class="col-md-5">
-      <input type="text" name="valor" class="form-control" placeholder="Buscar..." required>
-    </div>
-
-    <div class="col-md-2">
-      <button type="submit" class="btn btn-primary w-100">Filtrar</button>
-    </div>
-
-    <div class="col-md-2">
-      <a href="{% url 'historial_reservas' %}" class="btn btn-secondary w-100">Limpiar</a>
+  <!-- Formulario de filtros dinámicos -->
+  <form method="get" class="mb-4" id="form-filtros">
+    <div id="filtros-container" class="row g-2">
+      <div class="col-md-3 filtro-row">
+        <select name="filtros[]" class="form-select filtro-select" id="primer-filtro" required>
+          <option value="" selected disabled>Filtrar por...</option>
+          <option value="cliente">Cliente</option>
+          <option value="habitacion">Habitación</option>
+          <option value="tarifa">Tarifa</option>
+          <option value="usuario">Registrado por</option>
+          <option value="fecha_inicio">Fecha Inicio</option>
+          <option value="fecha_fin">Fecha Fin</option>
+          <option value="pagado">Pagado</option>
+        </select>
+      </div>
+      <div class="col-md-5 filtro-row">
+        <input type="text" name="valores[]" class="form-control" id="primer-input" placeholder="Buscar..." required>
+      </div>
+      <div class="col-md-2">
+        <button type="button" class="btn btn-success w-100" id="agregar-filtro">+</button>
+      </div>
+      <div class="col-md-2">
+        <button type="submit" class="btn btn-primary w-100">Filtrar</button>
+      </div>
     </div>
   </form>
 
-  {% if reservas.has_other_pages %}
-  <div class="mb-3">
-    <nav aria-label="Paginación">
-      <ul class="pagination">
-        {% if reservas.has_previous %}
-        <li class="page-item">
-          <a class="page-link"
-            href="?page={{ reservas.previous_page_number }}{% if filtro %}&filtro={{ filtro }}{% endif %}{% if valor %}&valor={{ valor }}{% endif %}">Anterior</a>
-        </li>
-        {% endif %}
-
-        {% for num in reservas.paginator.page_range %}
-        <li class="page-item {% if reservas.number == num %}active{% endif %}">
-          <a class="page-link"
-            href="?page={{ num }}{% if filtro %}&filtro={{ filtro }}{% endif %}{% if valor %}&valor={{ valor }}{% endif %}">
-            {{num}}</a>
-        </li>
-        {% endfor %}
-
-        {% if reservas.has_next %}
-        <li class="page-item">
-          <a class="page-link"
-            href="?page={{ reservas.next_page_number }}{% if filtro %}&filtro={{ filtro }}{% endif %}{% if valor %}&valor={{ valor }}{% endif %}">Siguiente</a>
-        </li>
-        {% endif %}
-      </ul>
-    </nav>
-  </div>
-  {% endif %}
-
+  <!-- Tabla de resultados -->
   <div class="table-responsive">
     <table class="table table-bordered table-hover">
       <thead class="table-dark">
@@ -108,4 +78,73 @@
     </table>
   </div>
 </div>
+
+<!-- Script para filtros dinámicos y cambio de tipo de input -->
+<script>
+  // Delegación de eventos para cambio de select
+  document.getElementById("filtros-container").addEventListener("change", function (e) {
+    if (e.target.classList.contains("filtro-select")) {
+      const input = e.target.closest(".filtro-row").querySelector(".filtro-valor");
+      if (e.target.value === "fecha_inicio" || e.target.value === "fecha_fin") {
+        input.type = "date";
+        input.placeholder = "Seleccione una fecha";
+      } else {
+        input.type = "text";
+        input.placeholder = "Buscar...";
+      }
+    }
+  });
+
+  // Botón para agregar más filtros
+  document.getElementById("agregar-filtro").addEventListener("click", function () {
+    const container = document.getElementById("filtros-container");
+
+    const newRow = document.createElement("div");
+    newRow.classList.add("row", "g-2", "mt-2", "filtro-row");
+
+    newRow.innerHTML = `
+      <div class="col-md-3">
+        <select name="filtros[]" class="form-select filtro-select" required>
+          <option value="" selected disabled>Filtrar por...</option>
+          <option value="cliente">Cliente</option>
+          <option value="habitacion">Habitación</option>
+          <option value="tarifa">Tarifa</option>
+          <option value="usuario">Registrado por</option>
+          <option value="fecha_inicio">Fecha Inicio</option>
+          <option value="fecha_fin">Fecha Fin</option>
+          <option value="pagado">Pagado</option>
+        </select>
+      </div>
+      <div class="col-md-5">
+        <input type="text" name="valores[]" class="form-control filtro-valor" placeholder="Buscar..." required>
+      </div>
+      <div class="col-md-2">
+        <button type="button" class="btn btn-danger w-100 eliminar-filtro">X</button>
+      </div>
+    `;
+
+    container.appendChild(newRow);
+  });
+
+  // Botón eliminar filtro dinámico
+  document.addEventListener("click", function (e) {
+    if (e.target.classList.contains("eliminar-filtro")) {
+      e.target.closest(".filtro-row").remove();
+    }
+  });
+</script>
+
+<script>
+  // Cuando cambia el primer select, cambiar tipo del input si es fecha
+  document.getElementById("primer-filtro").addEventListener("change", function () {
+    const input = document.getElementById("primer-input");
+    if (this.value === "fecha_inicio" || this.value === "fecha_fin") {
+      input.type = "date";
+      input.placeholder = "Seleccione una fecha";
+    } else {
+      input.type = "text";
+      input.placeholder = "Buscar...";
+    }
+  });
+</script>
 {% endblock %}
