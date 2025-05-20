@@ -182,17 +182,15 @@ def ver_cuenta(request, habitacion_id):
 @login_required(login_url="iniciar_sesion")
 def generar_pdf_cuenta(request, habitacion_id):
     try:
-        hoy = timezone.now()
-
         reserva = Reserva.objects.filter(  # pylint: disable=no-member
             habitacion_id=habitacion_id,
-            fecha_inicio__lte=hoy,
-            fecha_fin__gte=hoy,
             pagado=False,
         ).first()
 
         if not reserva:
-            messages.error(request, "No hay una reserva activa para esta habitación.")
+            messages.error(
+                request, "No hay una reserva pendiente de pago para esta habitación."
+            )
             return redirect("panel_de_usuario")
 
         noches = (reserva.fecha_fin.date() - reserva.fecha_inicio.date()).days
@@ -202,7 +200,7 @@ def generar_pdf_cuenta(request, habitacion_id):
 
         consumos = ConsumoAdicional.objects.filter(  # pylint: disable=no-member
             reserva=reserva
-        )  # pylint: disable=no-member
+        )
 
         for consumo in consumos:
             consumo.total = consumo.precio_unitario * consumo.cantidad
@@ -222,17 +220,14 @@ def generar_pdf_cuenta(request, habitacion_id):
             "total_general": total_general,
         }
 
-        # Renderizar plantilla a string HTML
         template = get_template("cuenta_pdf.html")
         html_string = template.render(contexto)
 
-        # Crear respuesta HTTP como PDF
         response = HttpResponse(content_type="application/pdf")
         response["Content-Disposition"] = (
             f'attachment; filename="cuenta_habitacion_{habitacion_id}.pdf"'
         )
 
-        # Convertir HTML a PDF
         pisa_status = pisa.CreatePDF(html_string, dest=response)
 
         if pisa_status.err:
